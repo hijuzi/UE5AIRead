@@ -1,0 +1,26 @@
+{
+  "skill_name": "skill-authoring",
+  "evals": [
+    {
+      "id": 0,
+      "name": "author-new-skill-from-workflow",
+      "prompt": "我们团队每次发版前都要跑一套固定的检查流程：先确认所有 C++ 模块能编过，再检查有没有硬编码的路径字符串，然后核对 changelog 和版本号是否一致。这套流程我每次都手打一遍，已经写了三次了。帮我把它做成一个 skill，放到项目的 skills 目录里。",
+      "expected_output": "产出一个符合规范的 SKILL.md：description 写清触发场景与不适用场景；正文含目标、适用判断（带可执行检查命令）、分步流程（关键步骤带检查点）、验证清单；超过 500 行时拆到 references/；不含硬编码密钥。",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "fix-non-triggering-description",
+      "prompt": "我写了个 skill 叫 excel-report-gen，但是用的时候 AI 经常不触发它。有时候我说\"按上个月的模板出个报表\"它不用，我说\"用 excel-report-gen 技能\"它才用。帮我看看怎么改。文件在 ./skills/excel-report-gen/SKILL.md",
+      "expected_output": "诊断出问题出在 description：给出改写后的 description（补通用语言触发词、明确不适用场景），并建议用正例/反例各 10 条的自测方法验证触发命中率。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "review-oversized-skill",
+      "prompt": "这是我写的 SKILL.md，感觉有点乱，你帮我审一下：里面既讲了怎么迁移数据库 schema，又讲了怎么生成 API 文档，还有一套代码审查的规则。现在有 800 多行了，AI 用起来经常搞混。",
+      "expected_output": "识别出\"大杂烩 Skill\"反模式，给出按单一职责拆分为 3 个 Skill（或主 Skill + 子 Skill）的方案，并说明主 Skill 如何编排、如何写依赖关系和检查点。",
+      "files": []
+    }
+  ]
+}

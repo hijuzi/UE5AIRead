@@ -1,0 +1,38 @@
+---
+description: UE5AIRead 项目的文档套件红线与入口指针。涉及本项目文档生成、维护或查阅引擎源码时适用。
+alwaysApply: true
+enabled: true
+updatedAt: 2026-10-10T00:00:00.000Z
+provider:
+---
+
+# UE5AIRead 项目约束
+
+**项目目标**：把 UE5 引擎源码变成技术文档，服务两类消费者——程序员阅读理解、AI 辅助编程。
+
+**目录**：文档库在仓库根 `docs/`；技能套件在 `.codebuddy/skills/`；
+引擎源码在 `E:\EpicGames\UE_5.8`（**只读**）。
+
+## 入口（动手前先读，不要凭记忆猜）
+
+| 想了解 | 读 |
+|---|---|
+| 套件怎么设计、为什么这么拆、当前进度与已知空缺 | `docs/设计说明-UE5引擎文档技能套件.md` |
+| 路径写法、文档头、引用格式、语言约定 | `docs/_meta/convention.md` |
+| 引擎模块清单、首批批次、规模数据 | `docs/_meta/inventory.md` |
+| 有哪些产物、覆盖度、待办 | `docs/00-索引.md` |
+
+## 红线
+
+1. **引擎源码只读。** 禁止对 `E:\EpicGames\` 下任何文件执行写操作；写入仅限 `docs/`。
+2. **路径一律相对 UE 安装根**，以 `Engine/` 开头，正斜杠，不含盘符。
+   唯一的绝对路径出现在 `docs/_meta/convention.md` 的「本机环境」块。
+3. **不推断实现。** 任何"零命中""搜不到"的结论，在下定论之前先跑
+   `.codebuddy\skills\ue-engine-docs\scripts\check-source.ps1` 确认证据源本身完整。
+   本套件曾把"仅头文件安装导致的看不见"误判成"不存在"，错误结论写进产物之后才发现。
+4. **版本号首选** `Engine\Build\Build.version`，不依赖 Launcher Manifest
+   ——实测重装引擎后 Manifest 丢过该引擎条目。
+5. **不臆造 API 与路径。** 每处代码引用都必须是实际核对过的"文件 + 行号"；
+   无法确认时写"本机不可判定"，不要用"UE 通常是这样"补全。
+6. **新增或修改技能**走 `.codebuddy/skills/`，保持职责单一；
+   动手前先读设计文档里的拆分判据（独立成技能三问）。
