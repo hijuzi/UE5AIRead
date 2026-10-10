@@ -25,7 +25,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
        └─ UObject      （Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h 第 98 行）
             └─ UVisual（Engine/Source/Runtime/UMG/Public/Components/Visual.h 第 12 行，`: public UObject`）
                  └─ UWidget（Engine/Source/Runtime/UMG/Public/Components/Widget.h 第 216 行，`: public UVisual, public INotifyFieldValueChanged`）
-                      └─ UUserWidget（…/UMG/Public/Blueprint/UserWidget.h 第 280 行，`: public UWidget, public INamedSlotInterface`）
+                      └─ UUserWidget（Engine/Source/Runtime/UMG/Public/Blueprint/UserWidget.h 第 280 行，`: public UWidget, public INamedSlotInterface`）
 ```
 
 接口：`INamedSlotInterface`（`Components/NamedSlotInterface.h` 第 22 行；`UINTERFACE` 第 16 行）。
@@ -144,3 +144,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `types/SWidget.md`、`types/SCompoundWidget.md` —— 底层 Slate 控件体系（同批产出）
 - `modules/Slate-结构.md`、`modules/SlateCore-结构.md` —— 底层 UI 模块（同批产出）
 - `types/UObject.md` —— 基类链终点（已校验）
+
+## 更新记录
+
+- 2026-10-10 继承链路径写法规范化为安装根完整形式（`…/` 缩写 → 全文）

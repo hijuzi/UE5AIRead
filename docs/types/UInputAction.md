@@ -24,7 +24,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
   └─ UObjectBaseUtility（Engine/Source/Runtime/CoreUObject/Public/UObject/UObjectBaseUtility.h 第 44 行）
        └─ UObject      （Engine/Source/Runtime/CoreUObject/Public/UObject/Object.h 第 98 行）
             └─ UDataAsset（Engine/Source/Runtime/Engine/Classes/Engine/DataAsset.h 第 17 行；`UCLASS(abstract, MinimalAPI, ...)` 第 16 行）
-                 └─ UInputAction（…/EnhancedInput/Public/InputAction.h 第 55 行）
+                 └─ UInputAction（Engine/Plugins/EnhancedInput/Source/EnhancedInput/Public/InputAction.h 第 55 行）
 ```
 
 派生方向：范围内仅测试类 1 个（见第七节）。
@@ -110,3 +110,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `modules/Engine-结构.md` —— `UDataAsset` 基类所在模块（已校验）
 - `modules/CoreUObject-结构.md` —— 基类链所在模块（已校验）
 - `types/AActor.md` —— 输入组件的宿主（同批产出）
+
+## 更新记录
+
+- 2026-10-10 继承链路径写法规范化为安装根完整形式（`…/` 缩写 → 全文）

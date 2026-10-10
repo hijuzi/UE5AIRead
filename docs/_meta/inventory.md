@@ -67,7 +67,20 @@
 
 批次顺序的依据与详细理由见 `.codebuddy/skills/ue-engine-docs-suite/ue-engine-docs/references/subsystem-catalog.md`。
 
-## 四、第二批候选
+## 四、批次执行记录与后续候选
+
+### 4.1 已执行批次（批 1–16，2026-10-10 全员完成）
+
+| 批次 | 模块 | 状态 |
+|---|---|---|
+| 批 1–4 | 白名单 10（`Core`、`CoreUObject`、`Engine`、`GameplayTags`、`EnhancedInput`、`SlateCore`、`Slate`、`UMG`、`RHI`、`RenderCore`） | ✅ 10 模块 + 10 类型 |
+| 批 5–8 | 第二批 8（`Renderer`、`MovieScene`、`Net`→`NetCore`、`AIModule`、`NavigationSystem`、`PhysicsCore`、`GameplayTasks`、`DeveloperSettings`） | ✅ 8 模块 + 8 类型 |
+| 批 9–12 | 第三批 8（`MovieSceneTracks`、`LevelSequence`、`IrisCore`、`NetCommon`、`Chaos`、`Navmesh`、`InputCore`、`SlateRHIRenderer`） | ✅ 8 模块 + 8 类型 |
+| 批 13–16 | 第四批 8（`TimeManagement`、`UniversalObjectLocator`、`AudioMixer`、`AudioExtensions`、`Sockets`、`PacketHandler`、`AnimationCore`、`AnimGraphRuntime`） | ✅ 8 模块 + 8 类型 |
+
+> 合计 **34 模块 + 34 类型 + 1 流程 = 69 篇**（模块覆盖 34/292）；产物清单见 `docs/00-索引.md`，批次记录见设计说明第 23–25 节。
+
+### 4.2 第二批候选（历史记录；已于批 5–8 全部完成）
 
 | 模块 | 路径 | 文件数 |
 |---|---|---|
@@ -78,7 +91,47 @@
 | `NavigationSystem` | `Engine/Source/Runtime/NavigationSystem` | 61 |
 | `PhysicsCore` | `Engine/Source/Runtime/PhysicsCore` | 43 |
 | `GameplayTasks` | `Engine/Source/Runtime/GameplayTasks` | 12 |
-| `DeveloperSettings` | `Engine/Source/Runtime/DeveloperSettings` | 未单独统计 |
+| `DeveloperSettings` | `Engine/Source/Runtime/DeveloperSettings` | 10（批 5 核清） |
+
+### 4.3 第五批候选与定档（2026-10-10 登记）
+
+**定档（批 17–20）**：
+
+| 批次 | 模块 | 说明 |
+|---|---|---|
+| 批 17 | `GeometryCore`、`GeometryFramework` | 几何链开篇；同波含 Navmesh 模块遗留的 `dtNavMesh` 类型补篇 |
+| 批 18 | `MediaAssets`、`MediaUtils` | 媒体链开篇 |
+| 批 19 | `ChaosCore`、`ChaosSolverEngine` | 物理生态补完（`PhysicsCore` → `Chaos` → 两者成链） |
+| 批 20 | `Landscape`、`Foliage` | 世界构建链 |
+
+**候选池（均为纳入范围 Runtime；文件数取 `_meta/engine-modules.json` 2026-10-10 口径）**：
+
+| 模块 | 路径 | 文件数 |
+|---|---|---|
+| `GeometryCore` | `Engine/Source/Runtime/GeometryCore` | 337 |
+| `ApplicationCore` | `Engine/Source/Runtime/ApplicationCore` | 208 |
+| `Landscape` | `Engine/Source/Runtime/Landscape` | 135 |
+| `MassEntity` | `Engine/Source/Runtime/MassEntity` | 104 |
+| `GeometryCollectionEngine` | `Engine/Source/Runtime/Experimental/GeometryCollectionEngine` | 77 |
+| `AssetRegistry` | `Engine/Source/Runtime/AssetRegistry` | 57 |
+| `ChaosCore` | `Engine/Source/Runtime/Experimental/ChaosCore` | 53 |
+| `MediaAssets` | `Engine/Source/Runtime/MediaAssets` | 48 |
+| `Foliage` | `Engine/Source/Runtime/Foliage` | 44 |
+| `MediaUtils` | `Engine/Source/Runtime/MediaUtils` | 30 |
+| `MovieSceneCapture` | `Engine/Source/Runtime/MovieSceneCapture` | 30 |
+| `ChaosSolverEngine` | `Engine/Source/Runtime/Experimental/ChaosSolverEngine` | 26 |
+| `GeometryFramework` | `Engine/Source/Runtime/GeometryFramework` | 26 |
+| `MeshDescription` | `Engine/Source/Runtime/MeshDescription` | 23 |
+| `PakFile` | `Engine/Source/Runtime/PakFile` | 20 |
+| `MassCore` | `Engine/Source/Runtime/Mass/MassCore` | 14 |
+| `ImageCore` | `Engine/Source/Runtime/ImageCore` | 13 |
+| `ImageWriteQueue` | `Engine/Source/Runtime/ImageWriteQueue` | 11 |
+| `SkeletalMeshDescription` | `Engine/Source/Runtime/SkeletalMeshDescription` | 10 |
+| `SlateBaseRenderer` | `Engine/Source/Runtime/SlateBaseRenderer` | 10 |
+| `StaticMeshDescription` | `Engine/Source/Runtime/StaticMeshDescription` | 9 |
+
+> **类型补篇**：`dtNavMesh`（`Engine/Source/Runtime/Navmesh/Public/Detour/DetourNavMesh.h` 第 549 行起，约 497 行；批 11 遗留记录）。
+> **范围外（如实标注）**：`DerivedDataCache`（111 文件）、`SkeletalMeshUtilitiesCommon`（7 文件）属 **Developer** 分类，不在纳入范围。
 
 ## 五、盘点异常与待核对项
 
@@ -96,7 +149,7 @@
 - [x] 本机环境块记录的版本与实际安装一致 —— 已于 2026-10-10 核对通过（重装后为 UE 5.8.3 Build 58210709）
 - [x] 白名单 10 个模块全部命中，无缺失
 - [ ] `Plugins` 分组名与插件名的对应关系尚未展开，扩面到某个插件时需先确认其真实 path
-- [ ] `DeveloperSettings` 的文件数未单独统计（`-SkipFileCount` 未使用，但其行未在摘录中）
+- [x] `DeveloperSettings` 的文件数未单独统计 —— 已于批 5 核清：10 文件 / 4 头文件（2026-10-10）
 
 ### 5.3 已知的计数口径限制
 

@@ -447,6 +447,9 @@ flowchart TD
 - [x] Phase 4：⑥ `ue-ai-index` —— 2026-10-10 技能落地 + 首个索引产出（`docs/ai/ai-index.md`，5 篇产物），见第 20 节
 - [x] **重跑批 1**（`Core`、`CoreUObject` + `FName`、`UObject`）—— 2026-10-10 完成：4 篇产物重跑 + ⑤ 二轮校验（1 条修正）+ ⑥ 重建；两个既定补全项（`UObject` 派生类搜索、`CoreUObject` 的 `SetupVerse()` 展开）均已落实，见第 21 节
 - [x] 批 2–4（`Engine`、`GameplayTags`；`EnhancedInput`、`SlateCore`、`Slate`、`UMG`；`RHI`、`RenderCore`）—— 2026-10-10 一次性完成：16 篇产物（8 模块 + 8 类型）+ 批量轮校验（修正 3 条）；白名单 **10/10** 全覆盖，见第 22 节
+- [x] 第二批（批 5–8：`Renderer`、`DeveloperSettings`、`MovieScene`、`GameplayTasks`、`NetCore`、`PhysicsCore`、`AIModule`、`NavigationSystem`）—— 2026-10-10 完成：16 篇产物（8 模块 + 8 类型）+ 批量轮校验（修正 11 条）；模块覆盖 **18/292**，见第 23 节
+- [x] 第三批（批 9–12：`MovieSceneTracks`、`LevelSequence`、`IrisCore`、`NetCommon`、`Chaos`、`Navmesh`、`InputCore`、`SlateRHIRenderer`）—— 2026-10-10 完成：16 篇产物（8 模块 + 8 类型）+ 批量轮校验（修正 8 条）；模块覆盖 **26/292**，见第 24 节
+- [x] 第四批（批 13–16：`TimeManagement`、`UniversalObjectLocator`、`AudioMixer`、`AudioExtensions`、`Sockets`、`PacketHandler`、`AnimationCore`、`AnimGraphRuntime`）—— 2026-10-10 完成：16 篇产物（8 模块 + 8 类型）+ 批量轮校验（修正 7 条）；模块覆盖 **34/292**，见第 25 节
 - [ ] 按"正常 / 缺资料 / 不适用"三类任务验收（建议与 18.2 的 evaluation 用例合流执行）
 - [x] P1（评估建议）：主技能 Step 5"修正传播反向检索" + ①–④ 完成检查"数字断言注明取数" —— 2026-10-10 完成
 - [ ] 执行 evaluation 用例（12 个文件已建，待在独立会话逐条验证并回填"执行记录"表）
@@ -896,3 +899,150 @@ flowchart TD
 1. 扩面第二批（`Renderer`、`MovieScene`、`Net`、`AIModule`、`NavigationSystem`、`PhysicsCore`、`GameplayTasks`、`DeveloperSettings`）；
 2. 补缺失流程产物（`flows/` 目前仅 1 条；渲染与输入链路尚无流程文档）；
 3. 执行 evaluation 用例（与 §12.2 待办合流）。
+
+---
+
+## 23. 第二批（批 5–8）扩面记录（2026-10-10）
+
+### 23.1 触发与范围
+
+- 触发：用户确认"继续"后按既定流程推进；范围取 `_meta/inventory.md` 第四节第二批候选（8 项）。
+- **两次目标纠正（实测）**：
+  - `Net`（候选名）实为 `Runtime/Net/` 下的三个模块——取 **`NetCore`**（`Runtime/Net/Core`，82 文件 / 47 头文件）成篇（同目录 `NetCommon`、`Iris`（IrisCore）未成篇）；
+  - `PhysicsCore` 的预期代表类型 `UPhysicalMaterialCore` **不存在**（全引擎 0 命中，5.5/5.7 源码对照复核）→ 改取其实际核心类 **`UPhysicalMaterial`**。
+
+### 23.2 产出（16 篇）
+
+| 批次 | 模块文档 | 类型文档 |
+|---|---|---|
+| 批 5 | `Renderer`、`DeveloperSettings` | `FSceneInterface`（**定义在 Engine**，Renderer 的 `FScene` 实现）、`UDeveloperSettings` |
+| 批 6 | `MovieScene`、`GameplayTasks` | `UMovieSceneSequence`、`UGameplayTask` |
+| 批 7 | `NetCore`、`PhysicsCore` | `FFastArraySerializer`、`UPhysicalMaterial` |
+| 批 8 | `AIModule`、`NavigationSystem` | `AAIController`、`UNavigationSystemV1` |
+
+关键实测（举例）：
+
+- `Renderer` 是已覆盖模块中**唯一** `SupportsDynamicReloading` 覆写为 `true` 者；`FSceneRenderer` 在 Private、`ISceneRenderer` 才在 Public；`FSceneInterface`/`FSceneView`/`FPrimitiveSceneProxy` 都在 **Engine**。
+- `NetCore` 显式覆写 `false`（禁止热重载）；`FNetBitReader`/`FNetBitWriter`/`UPackageMap` 在 **CoreUObject**（`CoreNet.h`）；`FNetworkGUID` 在 Core。
+- `PhysicsCore`：`UPhysicalMaterialCore` 不存在；`FPhysScene_Chaos`/`FPhysInterface_Chaos` 定义在 **Engine**；`SetupModulePhysicsSupport` 的自引用清理只在本模块做。
+- `UPlatformSettings`/`UPlatformSettingsManager` **不**派生 `UDeveloperSettings`（并列体系）；`UPhysicsSettingsCore` 才派生。
+- `UMovieScene` **不是** `UMovieSceneSequence` 的派生类（兄弟关系）。
+
+### 23.3 批量轮校验（⑤）
+
+- 机器初筛共 3 跑：首跑 9 处缺失引用（`…/` 缩写 4 处 + 模块内相对形式 5 处）→ 修正 22 处后 **PASS**（37 篇；204 个引用文件全部存在；141 个可解析行号点全部在范围内）。
+- 修正 11 条（11 篇）；未判定 0；另 2 篇既有文档（`UUserWidget`/`UInputAction`）随轮路径规范化并追加更新记录。
+- 否定结论 100% 复核（17 项）+ 派生统计全量（8 组）。
+- 工具边界观察（累计 2 条：裸子串路径误解析、`…/` 缩写被当作缺失引用）留待技能评估轮。
+
+### 23.4 ⑥ 与索引
+
+- `ai/ai-index.md` 按 37 篇重建（分层路由扩为 6 组；API 速查 14 行；约定与坑 34 条）。
+- `00-索引.md`：模块覆盖 **18/292**、第二批批次全绿、空缺表更新。
+
+### 23.5 至此状态与下一步
+
+**模块文档 18 篇（292 个纳入模块中的 18 个）+ 类型 18 + 流程 1 = 37 篇，全部已校验。**
+
+下一步候选：
+
+1. **第三批扩面**（候选：`MovieSceneTracks`、`LevelSequence`、`GameplayAbilities`、`IrisCore`、`Navmesh`、`Chaos` 等——需先定批次）；
+2. **补流程产物**（渲染 / 网络复制 / AI 行为树 / 导航构建 / 序列求值链路均缺）；
+3. 执行 evaluation 用例（与 §12.2 待办合流）。
+
+---
+
+## 24. 第三批（批 9–12）扩面记录（2026-10-10）
+
+### 24.1 触发与范围
+
+- 触发：用户"继续"后按既定流程推进；范围为本轮新定批次（第三批），全部在纳入范围内（Runtime）。
+- 批次构成：批 9 `MovieSceneTracks`+`LevelSequence`；批 10 `IrisCore`+`NetCommon`；批 11 `Chaos`+`Navmesh`；批 12 `InputCore`+`SlateRHIRenderer`。
+- 范围外（未动）：`GameplayAbilities`、`TemplateSequence`（Plugins，需先扩范围）。
+
+### 24.2 产出（16 篇）
+
+| 批次 | 模块文档 | 类型文档 |
+|---|---|---|
+| 批 9 | `MovieSceneTracks`、`LevelSequence` | `UMovieScene3DTransformTrack`、`ULevelSequence` |
+| 批 10 | `IrisCore`、`NetCommon` | `UReplicationSystem`、`FPacketDataView` |
+| 批 11 | `Chaos`、`Navmesh` | `FImplicitObject`、`ARecastNavMesh` |
+| 批 12 | `InputCore`、`SlateRHIRenderer` | `FKey`、`FSlateElementBatcher` |
+
+关键实测（举例）：
+
+- **三处"随批类型"归属跨模块**（按实标注，同 `FSceneInterface` 先例）：`ARecastNavMesh`→NavigationSystem；`FSlateElementBatcher`→SlateCore；`FPacketDataView` 为 NetCommon **放宽判据**产物（模块无 ≥60 行类型）。
+- 命名陷阱三连：Chaos 的 `FPBDRigidsEvolution`/`FPhysicsSolver`/`FGeometryParticleHandle` **均为别名/typedef**（字面搜类名落空）；IrisCore 路径 `Net/Iris`；`FKey` 在 `Classes/` 而非 `Public/`。
+- **Navmesh 是首个"无自定义模块类"模块**（`IMPLEMENT_MODULE(FDefaultModuleImpl, Navmesh)`）。
+- 网络三兄弟热重载全景补齐：NetCore / IrisCore / NetCommon **均显式 `false`**（连同 Renderer `true`，库内共 4 个显式覆写者）。
+
+### 24.3 批量轮校验（⑤）
+
+- 机器初筛 2 跑：首跑 8 处缺失引用（`…/` 残留 6 + 后缀粘连 2）→ 修正 14 处后 **PASS**（53 篇；287 个引用文件全部存在；173 个行号点全部在范围内）。
+- 修正 8 条（8 篇）、未判定 0；否定结论 100%（约 20 项）+ 派生统计全量（8 组）+ 关键行抽查约 70 处。
+- 工具边界观察第 3 条：**路径后紧跟全角括号/中文会被并入引用 token**（已在文档侧规避）。
+
+### 24.4 ⑥ 与索引
+
+- `ai/ai-index.md` 按 53 篇重建（检索路由扩为 6 组；产物清单 26+26+1；API 速查 14 行；约定与坑 33 条）。
+- `00-索引.md`：模块覆盖 **26/292**、第三批批次全绿、空缺表更新（新增"Plugins 未纳入"项）。
+
+### 24.5 至此状态与下一步
+
+**模块 26 篇 + 类型 26 篇 + 流程 1 篇 = 53 篇，全部已校验。**
+
+下一步候选：
+
+1. **第四批扩面**（候选：`dtNavMesh`、`MovieSceneCapture`、`TimeManagement`、`UniversalObjectLocator`、`AudioMixer`、`AnimationCore` 等——需先定批次）；
+2. **补流程产物**（渲染 / 网络复制 / AI 行为树 / 导航构建 / 序列求值链路均缺）；
+3. 执行 evaluation 用例（与 §12.2 待办合流）；
+4. 如需 `GameplayAbilities` 等 Plugins 模块，先走**扩范围讨论**。
+
+---
+
+## 25. 第四批（批 13–16）扩面记录（2026-10-10）
+
+### 25.1 触发与范围
+
+- 触发：用户"继续第四批"；范围为本轮新定批次（第四批），全部在纳入范围内（Runtime）。
+- 批次构成：批 13 `TimeManagement`+`UniversalObjectLocator`（序列/时间链收尾）；批 14 `AudioMixer`+`AudioExtensions`（音频链开篇）；批 15 `Sockets`+`PacketHandler`（网络链收尾）；批 16 `AnimationCore`+`AnimGraphRuntime`（动画链开篇）。
+- 范围外（未动）：`GameplayAbilities`、`TemplateSequence`、`TimedDataMonitor` 等 Plugins。
+
+### 25.2 产出（16 篇）
+
+| 批次 | 模块文档 | 类型文档 |
+|---|---|---|
+| 批 13 | `TimeManagement`、`UniversalObjectLocator` | `FFrameRate`（归属 Core）、`FUniversalObjectLocator` |
+| 批 14 | `AudioMixer`、`AudioExtensions` | `FMixerDevice`、`IAudioEndpoint` |
+| 批 15 | `Sockets`、`PacketHandler` | `FSocket`、`PacketHandler` |
+| 批 16 | `AnimationCore`、`AnimGraphRuntime` | `FEulerTransform`、`FAnimNode_BlendSpacePlayer` |
+
+关键实测（举例）：
+
+- **第四处"随批归属"**：`FFrameRate` 等帧率/时间码基础类型在 **Core**；TimeManagement 为上层设施且**零生命周期覆写**。
+- **类名先验被推翻两处**：`PacketHandler` / `HandlerComponent` **无 F/P 前缀**（`FPacketHandler*` 全库 0 命中）；`IAudioExtensionPlugin` 只是头文件名（无同名类型）。
+- **音频链两处归属修正**：`IAudioMixerPlatformInterface` 在 **AudioMixerCore**；`FMixerDevice` 非 UObject（65 条虚函数，三基类 `FAudioDevice`/`IAudioMixer`/`FGCObject`）。
+- **网络链收尾**：`FSocket` 29 条纯虚 + 平台实现（`FSocketBSD`）；Sockets 双 `false` 覆写（第 6 个显式覆写者；含 `SupportsAutomaticShutdown`）。
+- **动画链**：三个高频节点类（`FAnimNode_SequencePlayer` / `FAnimNode_Base` / `FAnimInstanceProxy`）均在 **Engine**——AnimGraphRuntime 提供叶子节点；`FAnimNode_BlendSpacePlayer` 有 3 个派生（含 `FAnimNode_AimOffsetLookAt`）。
+
+### 25.3 批量轮校验（⑤）
+
+- 机器初筛 2 跑：首跑 9 处缺失引用（裸路径 5 + 后缀粘连 4）→ 修正 9 处后 **PASS**（69 篇；368 个引用文件全部存在；204 个行号点全部在范围内）。
+- 修正 7 条（7 篇）、未判定 0；否定结论 100%（约 22 项）+ 派生统计全量（8 组）+ 关键行抽查约 90 处。
+- **工具边界三条复发**（裸路径 / `…/` 缩写 / 后缀粘连）——已在质量报告记录"下批写作前写进规避清单"。
+
+### 25.4 ⑥ 与索引
+
+- `ai/ai-index.md` 按 69 篇重建（检索路由扩为 7 组；产物清单 34+34+1；API 速查 14 行；约定与坑 45 条）。
+- `00-索引.md`：模块覆盖 **34/292**、第四批批次全绿、空缺表更新（第五批候选）。
+
+### 25.5 至此状态与下一步
+
+**模块 34 篇 + 类型 34 篇 + 流程 1 篇 = 69 篇，全部已校验。**
+
+下一步候选：
+
+1. **第五批扩面**（候选：`GeometryCore`/`GeometryFramework`、`AssetRegistry`、`MassEntity`、`MediaUtils`/`MediaAssets`、`MovieSceneCapture`、`ChaosCore`/`ChaosSolverEngine`、`Landscape`/`Foliage`、`dtNavMesh` 补篇等——需先定批次）；
+2. **补流程产物**（渲染 / 网络复制 / AI / 导航 / 序列 / 音频链路均缺）；
+3. 执行 evaluation 用例（与 §12.2 待办合流）；
+4. Plugins 扩范围讨论（GAS / TemplateSequence / TimedDataMonitor）。
