@@ -445,8 +445,8 @@ flowchart TD
 - [x] **实跑 ④**，产出首个 `docs/flows/` 产物 —— 2026-10-10 完成：`docs/flows/UObject创建流程.md`（`NewObject` 主路径，5 层深度；第七节列出 12 类关键分支，10 类未展开），见第 16 节
 - [x] Phase 3：⑤ `ue-doc-verify` 技能已落地并完成首轮校验（5 篇产物、7 条修正、0 未判定），见第 17 节
 - [x] Phase 4：⑥ `ue-ai-index` —— 2026-10-10 技能落地 + 首个索引产出（`docs/ai/ai-index.md`，5 篇产物），见第 20 节
-- [ ] **重跑批 1**（`Core`、`CoreUObject` + `FName`、`UObject`）—— 旧产物已于 2026-10-10 删除，待重跑 + ⑤ 校验 + ⑥ 重建；建议顺带补全首次闭环的已知空缺（`UObject` 派生类搜索、`CoreUObject` 的 `SetupVerse()` 展开）
-- [ ] 批 2（`Engine`、`GameplayTags`）
+- [x] **重跑批 1**（`Core`、`CoreUObject` + `FName`、`UObject`）—— 2026-10-10 完成：4 篇产物重跑 + ⑤ 二轮校验（1 条修正）+ ⑥ 重建；两个既定补全项（`UObject` 派生类搜索、`CoreUObject` 的 `SetupVerse()` 展开）均已落实，见第 21 节
+- [x] 批 2–4（`Engine`、`GameplayTags`；`EnhancedInput`、`SlateCore`、`Slate`、`UMG`；`RHI`、`RenderCore`）—— 2026-10-10 一次性完成：16 篇产物（8 模块 + 8 类型）+ 批量轮校验（修正 3 条）；白名单 **10/10** 全覆盖，见第 22 节
 - [ ] 按"正常 / 缺资料 / 不适用"三类任务验收（建议与 18.2 的 evaluation 用例合流执行）
 - [x] P1（评估建议）：主技能 Step 5"修正传播反向检索" + ①–④ 完成检查"数字断言注明取数" —— 2026-10-10 完成
 - [ ] 执行 evaluation 用例（12 个文件已建，待在独立会话逐条验证并回填"执行记录"表）
@@ -819,3 +819,80 @@ flowchart TD
 **7 个技能全部落地**（⑥ 完成，⑦ 占位未启用）；Phase 0–4 的技能交付全部完成。
 剩余主线：**批 2–4 的 8 个模块产物**（`Engine`、`GameplayTags`、`EnhancedInput`、
 `SlateCore`、`Slate`、`UMG`、`RHI`、`RenderCore`），以及 ⑤/⑥ 在产物积累后的重跑。
+
+---
+
+## 21. 批 1 重跑与二轮校验记录（2026-10-10）
+
+### 21.1 产出（4 篇，均经 ⑤ 二轮校验并回填）
+
+| 产物 | 关键数据 |
+|---|---|
+| `modules/Core-结构.md` | 依赖三表（无条件 12 行 / 条件依赖 22 行归并 / 第三方静态 8 处调用）；暴露面 26 行；`Core.Build.cs` 376 行、39 处 `if` 分支 |
+| `modules/CoreUObject-结构.md` | 依赖三表；**`SetupVerse()` 已展开**（UBT `ModuleRules.cs` 第 1629-1641 行：`bUseVerseVM` 时追加 `libpas` / `CorePreciseFP`）；第三方静态实测 0 处 |
+| `types/FName.md` | UEOps 比较机制取证（`operator==` 由 `Misc/UEOps.h` 从 `UEOpEquals` 合成；排序运算符显式删除）；全文零虚函数 |
+| `types/UObject.md` | **派生类搜索补全**（边界：Runtime + EnhancedInput；648 行 / 575 文件 + 8 行）；生命周期钩子 20 项；扩展点区分「可覆写 / 内部」 |
+
+### 21.2 二轮校验（⑤）
+
+- 机器初筛：首跑报 **8 处硬错误**（`types/UObject.md` 将安装根相对路径误写为模块内相对形式）→ 修正 14 处（含人工补出的 6 处非前缀形式）后 **PASS**；35 个引用文件全部存在、64 个可解析行号点全部在范围内。
+- 语义抽样：约 60 处（否定类结论 100%）；**修正 1 条、未判定 0**。
+- 环境值复核：`.cpp` 13,180 → **13,182**（复跑稳定）；按 Step 5 修正传播全库同步（含 `ue-flow-trace` 技能正文），旧值仅存历史留痕。
+- mtime 抽查正常（Top 5 为 13:12:22 安装窗口内；`Build.version` 13:46:57 与 `.cpp` 计数变动属同批安装后变化）。
+
+### 21.3 ⑥ 索引重建与后续
+
+- `docs/ai/ai-index.md` 重建完成（六节 / 107 行；路由 14 行、API 速查 10 条、约定与坑 14 条、流程锚点 1 组；「覆盖与空缺」逐条列批 2–4 与各产物未展开项）。
+- 重跑时机不变：**产物 ≥10 篇后重跑 ⑥**（`00-索引.md` 与 `使用说明.md` 双重登记）。
+- 下一批次：批 2（`Engine`、`GameplayTags`）。
+
+### 21.4 本轮发现（1 条，记录在案）
+
+**路径基点混用**：③ 的派生类表把"模块内相对形式"（`Engine/Classes/...`、`CoreUObject/Public/...`）写进了本应使用"安装根相对形式"的位置。
+`verify-refs.ps1` 能捕获以 `Engine/` 开头的错误形式（8 处），但捕获不到**不带前缀的短形式**（`CoreUObject/Public/...` 等 6 处，人工比对才发现）。
+
+→ 已处置：14 处全部修正，产物末尾追加「更新记录」。
+→ 候选技能改进（留待下一轮评估决定是否写入 ③ 完成检查）：**路径基点一致性**——派生类表与继承链图统一要求安装根相对形式。
+
+---
+
+## 22. 批 2–4 批量产出记录（2026-10-10）
+
+### 22.1 产出（16 篇，白名单 10/10 全覆盖）
+
+| 批次 | 模块文档 | 类型文档 |
+|---|---|---|
+| 批 2 | `Engine`、`GameplayTags` | `AActor`、`FGameplayTag` |
+| 批 3 | `EnhancedInput`、`SlateCore`、`Slate`、`UMG` | `UInputAction`、`SWidget`、`SCompoundWidget`、`UUserWidget` |
+| 批 4 | `RHI`、`RenderCore` | `FRHIResource`、`FRenderResource` |
+
+执行方式：用户指定"一次性跑完"→ 按批次串行生产（保交叉链接顺序），每批先并行侦察（`code-explorer` 子代理，只读 + 行号证据），再落笔；16 篇全部经全量机器初筛与否定结论 100% 复核。
+
+关键事实（举例）：
+
+- Engine：**双公开目录**（`Classes/` 908 个 `.h` + `Public/` 1,296 个 `.h`）；`SetupModulePhysicsSupport` / `SetupIrisSupport` 辅助函数展开（`Chaos`/`ChaosCore`/`NNE`/`IrisCore`/`ChaosVDRuntime`）
+- Slate 体系边界：`SCompoundWidget` / `SWindow` / `SBoxPanel` 等在 **SlateCore**，不在 Slate——文档按实测归属
+- RHI：**无自定义模块类**（`IMPLEMENT_MODULE(FDefaultModuleImpl, RHI)`）；`RHIStaticStates.h` 在 RenderCore、`RHIPipelineState.h` 不存在
+- `FRenderResource` 不继承 `FDeferredCleanupInterface`（与旧版本记忆不同，已写入产物）
+
+### 22.2 批量轮校验（⑤）
+
+- 机器初筛共 3 跑：首跑 14 处硬错误 → 修正后 **PASS**（21 篇；101 个引用文件全部存在；104 个可解析行号点全部在范围内）
+- 修正 3 条：`Engine-结构.md` 路径 21 处（暴露面表 20 + 取数说明 1）、`AActor.md` 命令路径写法（反斜杠 / 裸子串先后触发告警与误解析 → 改用 `Join-Path` 形式）、`SCompoundWidget.md` 派生统计精确化（89 行 / 84 文件）
+- 抽样策略（批量轮）：否定结论 100%（18 项）+ 派生统计全量（5 组）+ 关键行抽查约 40 处；A–D 层密度低于逐篇建议值，已在报告中注明
+- **边界观察**：`verify-refs.ps1` 对"裸子串路径"（`Runtime/Engine/Classes/...` 的中段 `Engine/...`）会误解析为独立引用——文档侧已规避；脚本是否调整留待评估轮
+
+### 22.3 ⑥ 与索引
+
+- `ai/ai-index.md` 按 21 篇重建（按地层 / 框架 / UI / 渲染四组路由；API 速查 13 条、约定与坑 25 条；「覆盖与空缺」逐条列出白名单外与各产物未展开项）
+- `00-索引.md`：批次进度全绿、覆盖度 10/10、空缺表与「已解除」更新
+
+### 22.4 至此状态与下一步
+
+**首批白名单 10 个模块 + 10 个代表类型 + 1 条流程 = 21 篇，全部已校验。**
+
+下一步候选：
+
+1. 扩面第二批（`Renderer`、`MovieScene`、`Net`、`AIModule`、`NavigationSystem`、`PhysicsCore`、`GameplayTasks`、`DeveloperSettings`）；
+2. 补缺失流程产物（`flows/` 目前仅 1 条；渲染与输入链路尚无流程文档）；
+3. 执行 evaluation 用例（与 §12.2 待办合流）。

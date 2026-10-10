@@ -39,7 +39,7 @@ metadata:
 
 **实测背景**：本机 2026-10-10 曾遇到 `HeadersOnly` 形态（`Engine/Source` 下 0 个 `.cpp`），
 当时追踪 `StaticConstructObject_Internal` 只能找到声明、找不到实现体，调用链完全无法追。
-重装补齐源码后为 13,180 个 `.cpp`，技能恢复可用。
+重装补齐源码后为 13,182 个 `.cpp`，技能恢复可用。
 
 > `Engine` 目录下另有 327 个 `.cpp` 属于 Marketplace / Fab / Bridge 等**用户插件**，
 > 与引擎源码无关。`check-source.ps1` 已把它们排除——不排除的话会被误判成 `Complete`。
