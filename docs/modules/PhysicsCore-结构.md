@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # PhysicsCore 模块结构
 
@@ -99,9 +99,9 @@ PhysicsCore/
 
 | 断言 | 取数方式 |
 |---|---|
-| 65 文件 / 42 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'PhysicsCore'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 40 个 `.h` | `(Get-ChildItem "Runtime/PhysicsCore/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 31 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 65 文件 / 42 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/PhysicsCore" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/PhysicsCore" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 40 个 `.h` | `[M]` `(Get-ChildItem "Runtime/PhysicsCore/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 31 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/PhysicsCore/PhysicsCore.Build.cs").Count`；`Select-String "Runtime/PhysicsCore/PhysicsCore.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/PhysicsCore/PhysicsCore.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | `SetupModulePhysicsSupport` 展开与自引用清理 | UBT `ModuleRules.cs` 第 1793-1813 行；`PhysicsCore.Build.cs` 第 25-27 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -111,3 +111,7 @@ PhysicsCore/
 - `types/UDeveloperSettings.md` —— `UPhysicsSettingsCore` 的基类（批 5 产出）
 - `modules/Engine-结构.md` —— `FPhysScene_Chaos` / `FPhysInterface_Chaos` 的定义模块
 - `modules/NavigationSystem-结构.md` —— 同样调用 `SetupModulePhysicsSupport` 的模块（同批产出）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UDeveloperSettings
 
@@ -81,7 +81,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）。搜索模式 `\bpublic\s+UDeveloperSettings\b`（`*.h`）：Runtime **38 文件 / 42 处命中**；EnhancedInput 插件 **1 命中**（在 `InputEditor` 模块内）。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**。搜索模式 `\bpublic\s+UDeveloperSettings\b`（`*.h`）：Runtime **38 文件 / 42 处命中**；EnhancedInput 插件 **1 命中**（在 `InputEditor` 模块内）。
 
 | 代表派生类 | 位置 | 备注 |
 |---|---|---|
@@ -98,9 +98,11 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 77 行、类体 22-77 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` 8 条 | `Select-String -Pattern 'virtual'` 全匹配 + 逐段核对 |
-| 派生统计：Runtime 38 文件 / 42 命中；EnhancedInput 1 | `Select-String -Pattern '\bpublic\s+UDeveloperSettings\b'`（`*.h`）；工具头部计数 = 文件条目数，逐文件求和 = 命中数 |
+| `GetOwnerCustomSectionName` 在 `Engine/Source` 内 **0** 命中 | `[H]` 对 `Engine/Source` 全树按 `GetOwnerCustomSectionName` 检索（`*.h` / `*.cpp`）→ **0** |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 77 行、类体 22-77 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/DeveloperSettings/Public/Engine/DeveloperSettings.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` 8 条 | `[H]` `Select-String -Pattern 'virtual'` 全匹配 + 逐段核对 |
+| 派生统计：Runtime 38 文件 / 42 命中；EnhancedInput 1 | `[H]` `Select-String -Pattern '\bpublic\s+UDeveloperSettings\b'`（`*.h`）；工具头部计数 = 文件条目数，逐文件求和 = 命中数 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -109,3 +111,11 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `modules/GameplayTags-结构.md` —— 派生类 `UGameplayTagsDeveloperSettings` 的宿主
 - `modules/EnhancedInput-结构.md` —— 派生类 `UEnhancedInputDeveloperSettings` 的宿主
 - `modules/CoreUObject-结构.md` —— 基类链所在模块（已校验）
+
+## 更新记录
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

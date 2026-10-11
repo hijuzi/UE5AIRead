@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # MovieSceneTracks 模块结构
 
@@ -12,7 +12,7 @@
 |---|---|
 | 路径 | `Engine/Source/Runtime/MovieSceneTracks` |
 | 类别 | Runtime |
-| 规模 | 393 文件 / 200 头文件（`_meta/engine-modules.json` 2026-10-10 口径）；公开侧 182 个 `.h`（顶层 11 + 11 个子目录） |
+| 规模 | 394 文件 / 200 头文件（`_meta/engine-modules.json` 2026-10-10 口径）；公开侧 182 个 `.h`（顶层 11 + 11 个子目录） |
 | 分层 | 框架 |
 | 一句话职责 | MovieScene 数据模型的**具体轨道/段实现层**：3D 变换、音频、骨骼动画、事件、相机切换等轨道与段（Tracks / Sections）、求值实体系统（Systems）、预动画状态（PreAnimatedState）与通道（Channels） |
 
@@ -27,7 +27,7 @@ MovieSceneTracks/
 └── Private/                      # 实现（11 个子目录 + 顶层 .cpp/.h；含 Tests/）
 ```
 
-- `Tests/`：`Public/Tests/`（2 个 `.h`）与 `Private/Tests/`（9 个文件），本版标注不展开。
+- `Tests/`：`Public/Tests/`（2 个 `.h`）与 `Private/Tests/`（8 个文件），本版标注不展开。
 - 无聚合头（无 `MovieSceneTracks.h`；`Public/MovieSceneTracksFwd.h`（196 B）为前置声明头）。
 
 ## 三、依赖关系
@@ -110,9 +110,10 @@ MovieSceneTracks/
 
 | 断言 | 取数方式 |
 |---|---|
-| 393 文件 / 200 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'MovieSceneTracks'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 182 个 `.h`（顶层 11） | `(Get-ChildItem "Runtime/MovieSceneTracks/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 43 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| `Public/Tests/` **2** 个 `.h`、`Private/Tests/` **8** 个文件、Private 侧 **18** 个 `.h` | `[M]` `(Get-ChildItem "Runtime/MovieSceneTracks/Public/Tests" -Recurse -File -Filter *.h).Count` → 2；`(Get-ChildItem "Runtime/MovieSceneTracks/Private/Tests" -Recurse -File).Count` → 8；`(Get-ChildItem "Runtime/MovieSceneTracks/Private" -Recurse -File -Filter *.h).Count` → 18 |
+| 394 文件 / 200 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/MovieSceneTracks" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/MovieSceneTracks" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 182 个 `.h`（顶层 11） | `[M]` `(Get-ChildItem "Runtime/MovieSceneTracks/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 43 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/MovieSceneTracks/MovieSceneTracks.Build.cs").Count`；`Select-String "Runtime/MovieSceneTracks/MovieSceneTracks.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/MovieSceneTracks/MovieSceneTracks.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -122,3 +123,12 @@ MovieSceneTracks/
 - `types/UMovieSceneSequence.md` —— 序列资产基类（批 6）
 - `modules/LevelSequence-结构.md` —— 消费方模块（同批产出）
 - `modules/Engine-结构.md` —— `AActor` 等基类链所在模块
+
+## 更新记录
+
+- 2026-10-11 修正 `Private/Tests/` 文件数（9 → 8）
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对
+- 2026-10-11 模块文件数更正：**393 → 394**（`engine-modules.json` 原记 393 为陈旧值，磁盘实数 394）；该行取数方式同时改为引擎磁盘命令

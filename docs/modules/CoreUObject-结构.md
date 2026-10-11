@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # CoreUObject 模块结构
 
@@ -129,11 +129,11 @@ CoreUObject/
 
 | 断言 | 取数方式 |
 |---|---|
-| 969 文件 / 553 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'CoreUObject'` 行的 `Files`、`Headers` 字段 |
-| `Public/` 471 个 `.h`、11 个子目录 | `(Get-ChildItem "Runtime\CoreUObject\Public" -Recurse -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\CoreUObject\Public" -Directory).Count` |
-| `Public/UObject/` 156 个 `.h`、无子目录 | `(Get-ChildItem "Runtime\CoreUObject\Public\UObject" -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\CoreUObject\Public\UObject" -Directory).Count` |
-| `CoreUObject.Build.cs` 75 行 | `[System.IO.File]::ReadAllLines("Runtime\CoreUObject\CoreUObject.Build.cs").Count`（read_file 显示 76 属 EOF 渲染） |
-| `if` 分支 4 处、三方静态调用 0 处 | `Select-String "Runtime\CoreUObject\CoreUObject.Build.cs" -Pattern '\bif\s*\(' -AllMatches` 与 `AddEngineThirdPartyPrivateStaticDependencies` 的全匹配计数 |
+| 969 文件 / 553 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/CoreUObject" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/CoreUObject" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| `Public/` 471 个 `.h`、11 个子目录 | `[M]` `(Get-ChildItem "Runtime\CoreUObject\Public" -Recurse -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\CoreUObject\Public" -Directory).Count` |
+| `Public/UObject/` 156 个 `.h`、无子目录 | `[M]` `(Get-ChildItem "Runtime\CoreUObject\Public\UObject" -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\CoreUObject\Public\UObject" -Directory).Count` |
+| `CoreUObject.Build.cs` 75 行 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/CoreUObject/CoreUObject.Build.cs").Count` |
+| `if` 分支 4 处、三方静态调用 0 处 | `[M]` `Select-String "Runtime\CoreUObject\CoreUObject.Build.cs" -Pattern '\bif\s*\(' -AllMatches` 与 `AddEngineThirdPartyPrivateStaticDependencies` 的全匹配计数 |
 | `SetupVerse()` 展开 | `Engine/Source/Programs/UnrealBuildTool/Configuration/Rules/ModuleRules.cs` 第 1629-1641 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -143,3 +143,7 @@ CoreUObject/
 - `types/UObject.md` —— 本模块核心类型（同批产出）
 - `types/FName.md` —— `FName` 定义在 Core，本模块的对象命名依赖它
 - `flows/UObject创建流程.md` —— 对象创建主路径（已校验）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

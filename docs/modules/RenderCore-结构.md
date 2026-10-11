@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # RenderCore 模块结构
 
@@ -120,9 +120,9 @@ RenderCore/
 
 | 断言 | 取数方式 |
 |---|---|
-| 212 文件 / 121 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'RenderCore'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 105 个 `.h`（顶层 103 + 子目录 2） | `(Get-ChildItem "Runtime\RenderCore\Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 72 行、6 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 212 文件 / 121 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/RenderCore" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/RenderCore" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 105 个 `.h`（顶层 103 + 子目录 2） | `[M]` `(Get-ChildItem "Runtime\RenderCore\Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 72 行、6 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/RenderCore/RenderCore.Build.cs").Count`；`Select-String "Runtime/RenderCore/RenderCore.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/RenderCore/RenderCore.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -131,3 +131,7 @@ RenderCore/
 - `modules/RHI-结构.md` —— 下层 RHI 抽象层（同批产出）
 - `types/FRHIResource.md` —— RHI 侧资源基类（同批产出）
 - `modules/Core-结构.md` —— 上游地基模块（已校验）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

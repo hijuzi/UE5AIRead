@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # SlateRHIRenderer 模块结构
 
@@ -81,7 +81,7 @@ SlateRHIRenderer/
 行 161：IMPLEMENT_MODULE( FSlateRHIRendererModule, SlateRHIRenderer )
 ```
 
-- **启动/关闭为空实现**；实际初始化在**惰性路径** `ConditionalCreateResources()`（第 137-150 行）：创建 `FSlateRHIResourceManager`（第 139 行）、两枚 `FSlateFontCache`（Game 线程第 146 行 / Render 线程第 147 行）、组装 `FSlateFontServices`（第 149 行）。
+- **启动/关闭为空实现**；实际初始化在**惰性路径** `ConditionalCreateResources()`（第 137-150 行）：创建 `FSlateRHIResourceManager`（第 141 行）、两枚 `FSlateFontCache`（Game 线程第 146 行 / Render 线程第 147 行）、组装 `FSlateFontServices`（第 149 行）。
 - 同文件顶部：`FSlateRHIFontAtlasFactory : public ISlateFontAtlasFactory`（第 19 行起）。
 - **`SupportsDynamicReloading`**：未覆写（本轮检索 0 命中）。
 
@@ -99,9 +99,9 @@ SlateRHIRenderer/
 
 | 断言 | 取数方式 |
 |---|---|
-| 47 文件 / 24 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'SlateRHIRenderer'` 行的 `Files`、`Headers` 字段；公开 7 + Private 17 复核 |
-| 公开侧 7 个 `.h` | `(Get-ChildItem "Runtime/SlateRHIRenderer/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 31 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 47 文件 / 24 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/SlateRHIRenderer" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/SlateRHIRenderer" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 7 个 `.h` | `[M]` `(Get-ChildItem "Runtime/SlateRHIRenderer/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 31 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/SlateRHIRenderer/SlateRHIRenderer.Build.cs").Count`；`Select-String "Runtime/SlateRHIRenderer/SlateRHIRenderer.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/SlateRHIRenderer/SlateRHIRenderer.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -110,3 +110,9 @@ SlateRHIRenderer/
 - `modules/SlateCore-结构.md` —— `FSlateElementBatcher` / `FSlateFontCache` 的真实归属（批 3）
 - `modules/Renderer-结构.md` —— 私有依赖的场景渲染器（批 5）
 - `modules/InputCore-结构.md` —— 同批模块
+
+## 更新记录
+
+- 2026-10-11 修正 `FSlateRHIResourceManager` 创建行号：139 为守卫语句，创建在 141
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

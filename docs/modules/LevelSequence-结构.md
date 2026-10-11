@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # LevelSequence 模块结构
 
@@ -105,9 +105,9 @@ LevelSequence/
 
 | 断言 | 取数方式 |
 |---|---|
-| 36 文件 / 19 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'LevelSequence'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 17 个 `.h` | `(Get-ChildItem "Runtime/LevelSequence/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 47 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 36 文件 / 19 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/LevelSequence" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/LevelSequence" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 17 个 `.h` | `[M]` `(Get-ChildItem "Runtime/LevelSequence/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 47 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/LevelSequence/LevelSequence.Build.cs").Count`；`Select-String "Runtime/LevelSequence/LevelSequence.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/LevelSequence/LevelSequence.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -116,3 +116,7 @@ LevelSequence/
 - `modules/MovieSceneTracks-结构.md` —— 同批模块
 - `modules/MovieScene-结构.md`、`types/UMovieSceneSequence.md` —— 数据模型层（批 6）
 - `modules/UMG-结构.md` —— `ULevelSequenceBurnIn` 的基类（`UUserWidget`）所在模块
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

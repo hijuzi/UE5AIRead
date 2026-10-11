@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Core 模块结构
 
@@ -194,11 +194,11 @@ Core/
 
 | 断言 | 取数方式 |
 |---|---|
-| 2,171 文件 / 1,368 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Core'` 行的 `Files`、`Headers` 字段 |
-| `Public/` 1,265 个 `.h`、49 个子目录 | `(Get-ChildItem "Runtime\Core\Public" -Recurse -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\Core\Public" -Directory).Count` |
-| `Core.Build.cs` 376 行 | `[System.IO.File]::ReadAllLines("Runtime\Core\Core.Build.cs").Count` |
-| `if` 分支 39 处 | `Select-String "Runtime\Core\Core.Build.cs" -Pattern '\bif\s*\(' -AllMatches` 的全匹配计数 |
-| 三方静态依赖调用 8 处 | 同上，Pattern 换为 `AddEngineThirdPartyPrivateStaticDependencies` |
+| 2,171 文件 / 1,368 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Core" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Core" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| `Public/` 1,265 个 `.h`、49 个子目录 | `[M]` `(Get-ChildItem "Runtime\Core\Public" -Recurse -File -Filter *.h).Count`、`(Get-ChildItem "Runtime\Core\Public" -Directory).Count` |
+| `Core.Build.cs` 376 行 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Core/Core.Build.cs").Count` |
+| `if` 分支 39 处 | `[M]` `Select-String "Runtime\Core\Core.Build.cs" -Pattern '\bif\s*\(' -AllMatches` 的全匹配计数 |
+| 三方静态依赖调用 8 处 | `[M]` `Select-String "Runtime/Core/Core.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -207,3 +207,7 @@ Core/
 - `types/FName.md` —— `FName` 定义于本模块 `Public/UObject/NameTypes.h`
 - `types/UObject.md` —— `UObject` 属 `CoreUObject` 模块
 - `flows/UObject创建流程.md` —— 对象创建主路径（已校验）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

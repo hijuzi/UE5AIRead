@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # SWidget
 
@@ -58,7 +58,7 @@ TSharedFromThis<SWidget>          （Core 模板：Engine/Source/Runtime/Core/Pu
 | `GetReadableLocation()` / `GetTag()`（虚） | 调试位置 / 标签 | 第 1564 / 1570 行 |
 | `GetTickSpaceGeometry()` / `GetPaintSpaceGeometry()` | 几何缓存访问 | 第 1599 / 1605 行 |
 | `GetRenderOpacity()` / `SetRenderOpacity(...)` | 渲染不透明度 | 第 1214 / 1220 行 |
-| `NeedsPrepass()` / `SetCanTick(...)` / `GetCanTick()` | 布局与 Tick 开关 | 第 665 / 677 / 678 行 |
+| `NeedsPrepass()` / `SetCanTick(...)` / `GetCanTick()` | 布局与 Tick 开关 | 第 666 / 677 / 678 行 |
 | `GetPersistentState()` | 持久状态 | 第 691 行 |
 | `GetChildren()`（纯虚）/ `GetAllChildren()` | 子级体系 | 第 899 / 907 行 |
 | `AddMetadata<T>()` / `RemoveMetaData(...)` / `FindOrAddMetaData<T>()` | 控件元数据 | 第 1439 / 1449 / 1469 行 |
@@ -108,7 +108,7 @@ TSharedFromThis<SWidget>          （Core 模板：Engine/Source/Runtime/Core/Pu
 
 | 虚函数 | 原因 |
 |---|---|
-| `Prepass_Internal`（第 1782 行） | 内部预处理实现细节 |
+| `Prepass_Internal`（第 1782 行（**非虚函数**，不应列在虚函数表内）） | 内部预处理实现细节 |
 | `Debug_GetChildrenForReflector()`（第 914 行） | 调试期反射器专用 |
 
 ## 六、生命周期
@@ -119,12 +119,12 @@ TSharedFromThis<SWidget>          （Core 模板：Engine/Source/Runtime/Core/Pu
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件），引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+SWidget\b`（`*.h`）：Runtime **7 行 / 7 文件**；EnhancedInput **0 行**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**，引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+SWidget\b`（`*.h`）：Runtime **7 行 / 7 文件**；EnhancedInput **0 行**。
 
 | 直接派生类 | 位置 |
 |---|---|
-| `SPanel` | `Engine/Source/Runtime/SlateCore/Public/Widgets/SPanel.h` 第 29 行 |
-| `SLeafWidget` | `Engine/Source/Runtime/SlateCore/Public/Widgets/SLeafWidget.h` 第 28 行 |
+| `SPanel` | `Engine/Source/Runtime/SlateCore/Public/Widgets/SPanel.h` 第 28 行 |
+| `SLeafWidget` | `Engine/Source/Runtime/SlateCore/Public/Widgets/SLeafWidget.h` 第 27 行 |
 | `SCompoundWidget` | `Engine/Source/Runtime/SlateCore/Public/Widgets/SCompoundWidget.h` 第 21 行 |
 | `SRichTextBlock` | `Engine/Source/Runtime/Slate/Public/Widgets/Text/SRichTextBlock.h` 第 34 行 |
 | `SMultiLineEditableText` | `Engine/Source/Runtime/Slate/Public/Widgets/Text/SMultiLineEditableText.h` 第 48 行 |
@@ -137,9 +137,10 @@ TSharedFromThis<SWidget>          （Core 模板：Engine/Source/Runtime/Core/Pu
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 2,156 行、类体 163-2067 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` 77 条 | `Select-String -Pattern '^\s*SLATECORE_API virtual'` 行数（61）+ `^\s*virtual` 行数（21）− 类外 `FPopupLayer` 5 行 = **77** |
-| 派生统计：Runtime 7 / EnhancedInput 0 | `Select-String -Pattern '\bpublic\s+SWidget\b'`（`*.h`） |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 2,156 行、类体 163-2067 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/SlateCore/Public/Widgets/SWidget.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` 77 条 | `[H]` `Select-String -Pattern '^\s*SLATECORE_API virtual'` 行数（61）+ `^\s*virtual` 行数（21）− 类外 `FPopupLayer` 5 行 = **77** |
+| 派生统计：Runtime 7 / EnhancedInput 0 | `[H]` `Select-String -Pattern '\bpublic\s+SWidget\b'`（`*.h`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -148,3 +149,11 @@ TSharedFromThis<SWidget>          （Core 模板：Engine/Source/Runtime/Core/Pu
 - `types/SCompoundWidget.md` —— 常规控件的实用基类（同批产出）
 - `modules/Slate-结构.md` —— 高层框架模块（同批产出）
 - `modules/UMG-结构.md` —— 蓝图侧 UI 模块（同批产出）
+
+## 更新记录
+
+- 2026-10-11 修正四处：`NeedsPrepass()` 665 → 666；`Prepass_Internal`（1782）标注为非虚函数、移出虚函数表；`SPanel` 类关键字 29 → 28；`SLeafWidget` 28 → 27
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

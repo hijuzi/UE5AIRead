@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Chaos 模块结构
 
@@ -117,9 +117,9 @@ Experimental/Chaos/
 
 | 断言 | 取数方式 |
 |---|---|
-| 847 文件 / 512 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Chaos'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 495 个 `.h`（顶层 17） | `(Get-ChildItem "Runtime/Experimental/Chaos/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 58 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 847 文件 / 512 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Experimental/Chaos" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Experimental/Chaos" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 495 个 `.h`（顶层 17） | `[M]` `(Get-ChildItem "Runtime/Experimental/Chaos/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 58 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Experimental/Chaos/Chaos.Build.cs").Count`；`Select-String "Runtime/Experimental/Chaos/Chaos.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Experimental/Chaos/Chaos.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | `SetupModuleChaosVisualDebuggerSupport` 展开 | UBT `ModuleRules.cs` 第 1775-1788 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -129,3 +129,7 @@ Experimental/Chaos/
 - `modules/PhysicsCore-结构.md` —— 引擎物理接口层（批 7）
 - `modules/Navmesh-结构.md` —— 同批模块
 - `modules/Core-结构.md` —— `FDefaultModuleImpl` 等模块设施所在
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Renderer 模块结构
 
@@ -100,7 +100,7 @@ Renderer/
 ```
 
 - **模块类**：`FRendererModule final : IRendererModule`（第 31 行）；基类 `IRendererModule : IModuleInterface` 定义在 **RenderCore**（`Engine/Source/Runtime/RenderCore/Public/RendererInterface.h` 第 220 行）。
-- **`SupportsDynamicReloading` 显式覆写为 `true`**（第 35 行）——本套件已产出文档的模块中**首个显式覆写者**（其余模块均未覆写）。
+- **`SupportsDynamicReloading` 显式覆写为 `true`**（第 35 行）——本套件已产出文档的模块中**首个覆写并返回 `true` 者**（Core / Sockets / NetCore / NetCommon 亦已覆写，均返回 `false`）。
 - **`StartupModule()`**（`Renderer.cpp` 第 135-198 行）要点：
   1. `MESH_DRAW_COMMAND_STATS` 下创建 `FMeshDrawCommandStatsManager`（第 137-139 行）
   2. `GScreenSpaceDenoiser = IScreenSpaceDenoiser::GetDefaultDenoiser();`（第 141 行）
@@ -125,9 +125,11 @@ Renderer/
 
 | 断言 | 取数方式 |
 |---|---|
-| 781 文件 / 388 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Renderer'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 48 个 `.h`（顶层 42） | `(Get-ChildItem "Runtime/Renderer/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 62 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| `Private/` 子目录 **24** 个；Public 顶层 **42** / 递归 **48** 个 `.h` | `[M]` `(Get-ChildItem "Runtime/Renderer/Private" -Directory).Count` → 24；`(Get-ChildItem "Runtime/Renderer/Public" -File -Filter *.h).Count` → 42；`(Get-ChildItem "Runtime/Renderer/Public" -Recurse -File -Filter *.h).Count` → 48 |
+| `StartupModule` 初始化 **4** 个全局设施 | `[H]` 逐行通读 `RendererModule.cpp`（第 107 行）：`FRendererOnScreenNotification::Get` / `FVirtualTextureSystem::Initialize` / `FMaterialCacheTagProvider` 等 = **4** |
+| 781 文件 / 388 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Renderer" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Renderer" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 48 个 `.h`（顶层 42） | `[M]` `(Get-ChildItem "Runtime/Renderer/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 62 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Renderer/Renderer.Build.cs").Count`；`Select-String "Runtime/Renderer/Renderer.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Renderer/Renderer.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -137,3 +139,11 @@ Renderer/
 - `modules/RHI-结构.md` —— 底层硬件接口抽象
 - `modules/Engine-结构.md` —— 场景/图元代理的宿主模块
 - `types/FRenderResource.md` —— 渲染资源生命周期基类
+
+## 更新记录
+
+- 2026-10-11 修正跨模块否定断言：原写"首个显式覆写者（其余模块均未覆写）"，实际 Core / Sockets / NetCore / NetCommon 均已覆写，应表述为"首个覆写并返回 `true` 者"
+
+- 2026-10-11 「取数说明」补入 2 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

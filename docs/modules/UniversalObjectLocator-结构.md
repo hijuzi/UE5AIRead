@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UniversalObjectLocator 模块结构
 
@@ -30,11 +30,11 @@ UniversalObjectLocator/
 │   │   UniversalObjectLocatorStringUtils.h / UniversalObjectLocatorType.h / UniversalObjectLocatorFwd.h /
 │   │   UniversalObjectLocatorFragmentDebugging.h / IUniversalObjectLocatorModule.h /
 │   │   SubObjectLocator.h / DirectPathObjectLocator.h
-│   └── + UniversalObjectLocatorResolveParameterBuffer.inl
+│   └── + UniversalObjectLocatorResolveParameterBuffer.h（第 17 个 .h）/ UniversalObjectLocatorResolveParameterBuffer.inl
 └── Private/                          # UniversalObjectLocatorRegistry.h + 11 个 .cpp
 ```
 
-- 无 `Internal/`、无 `Tests/`；无聚合头（`UniversalObjectLocatorFwd.h` 为前置声明集合，被 9 个公开头包含）。
+- 无 `Internal/`、无 `Tests/`；无聚合头（`UniversalObjectLocatorFwd.h` 为前置声明集合，被 10 个公开头包含）。
 
 ## 三、依赖关系
 
@@ -108,9 +108,9 @@ UniversalObjectLocator/
 
 | 断言 | 取数方式 |
 |---|---|
-| 32 文件 / 18 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'UniversalObjectLocator'` 行的 `Files`、`Headers` 字段；公开 17 + Private 1 复核 |
-| 公开侧 17 个 `.h` | `(Get-ChildItem "Runtime/UniversalObjectLocator/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 19 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 32 文件 / 18 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/UniversalObjectLocator" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/UniversalObjectLocator" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 17 个 `.h` | `[M]` `(Get-ChildItem "Runtime/UniversalObjectLocator/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 19 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/UniversalObjectLocator/UniversalObjectLocator.Build.cs").Count`；`Select-String "Runtime/UniversalObjectLocator/UniversalObjectLocator.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/UniversalObjectLocator/UniversalObjectLocator.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -119,3 +119,9 @@ UniversalObjectLocator/
 - `modules/TimeManagement-结构.md` —— 同批模块
 - `modules/LevelSequence-结构.md` —— 首个跨模块消费者（`ls_lazy_obj_ptr`，批 9）
 - `types/UMovieSceneSequence.md` —— 动态绑定契约（批 6）
+
+## 更新记录
+
+- 2026-10-11 修正 `UniversalObjectLocatorFwd.h` 被公开头包含数（9 → 10）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

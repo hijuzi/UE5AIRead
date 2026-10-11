@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # GameplayTasks 模块结构
 
@@ -65,7 +65,7 @@ GameplayTasks/
 | 头文件 | 提供的能力 |
 |---|---|
 | `Engine/Source/Runtime/GameplayTasks/Classes/GameplayTask.h` | `UGameplayTask`（第 145 行）→ `types/UGameplayTask.md` |
-| `Engine/Source/Runtime/GameplayTasks/Classes/GameplayTasksComponent.h` | `UGameplayTasksComponent`（第 61 行，`: UActorComponent, IGameplayTaskOwnerInterface`） |
+| `Engine/Source/Runtime/GameplayTasks/Classes/GameplayTasksComponent.h` | `UGameplayTasksComponent`（第 61 行，`: UActorComponent, IGameplayTaskOwnerInterface, IVisualLoggerDebugSnapshotInterface`） |
 | `Engine/Source/Runtime/GameplayTasks/Classes/GameplayTaskOwnerInterface.h` | `IGameplayTaskOwnerInterface`（第 20 行；`UINTERFACE` 第 14-15 行） |
 | `Engine/Source/Runtime/GameplayTasks/Classes/GameplayTaskResource.h` | `UGameplayTaskResource`（第 14 行） |
 | `Engine/Source/Runtime/GameplayTasks/Classes/Tasks/GameplayTask_WaitDelay.h` | 延时任务 |
@@ -102,9 +102,10 @@ GameplayTasks/
 
 | 断言 | 取数方式 |
 |---|---|
-| 21 文件 / 11 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'GameplayTasks'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 10 个 `.h` | `Classes/`（含 `Tasks/`）与 `Public/` 递归计数 |
-| Build.cs 32 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 追加私有依赖 `IrisCore` 时附 **2** 个宏定义 | `[H]` 逐行通读 UBT `ModuleRules.cs` 第 1760 行前后的 `PublicDefinitions` 段 → **2** 个 `WITH_*` 定义 |
+| 21 文件 / 11 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/GameplayTasks" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/GameplayTasks" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 10 个 `.h` | `[H]` `Classes/`（含 `Tasks/`）与 `Public/` 递归计数 |
+| Build.cs 32 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/GameplayTasks/GameplayTasks.Build.cs").Count`；`Select-String "Runtime/GameplayTasks/GameplayTasks.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/GameplayTasks/GameplayTasks.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | `SetupIrisSupport` 展开 | UBT `ModuleRules.cs` 第 1747-1762 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -114,3 +115,11 @@ GameplayTasks/
 - `modules/MovieScene-结构.md` —— 同批模块
 - `modules/AIModule-结构.md` —— `UAITask` 派生类的宿主模块（第二批，后续批次）
 - `modules/Engine-结构.md` —— `UActorComponent` 基类所在模块
+
+## 更新记录
+
+- 2026-10-11 补齐 `UGameplayTasksComponent` 基类链（漏第三基类 `IVisualLoggerDebugSnapshotInterface`）
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

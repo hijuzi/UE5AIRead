@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Sockets 模块结构
 
@@ -77,7 +77,7 @@ Sockets/
 ```
 
 - **模块类**：`FSocketSubsystemModule : public IModuleInterface`（`Public/SocketSubsystemModule.h` 第 12 行）。
-- **`StartupModule()`**（声明第 58 行；实现 `SocketSubsystemModule.cpp` 第 114-119 行）：创建默认平台子系统 `DefaultSocketSubsystem = CreateSocketSubsystem( *this );`（第 119 行；平台 extern 工厂声明第 12 行）；子系统模块懒加载（头文件第 51-57 行 `IsModuleLoaded`/`LoadModule`）。
+- **`StartupModule()`**（声明第 58 行；实现 `SocketSubsystemModule.cpp` 第 114-119 行）：创建默认平台子系统 `DefaultSocketSubsystem = CreateSocketSubsystem( *this );`（第 119 行；平台 extern 工厂声明第 12 行）；子系统模块懒加载（实现文件 `SocketSubsystemModule.cpp` 第 51/54 行 `IsModuleLoaded`/`LoadModule`）。
 - **`ShutdownModule()`**（声明第 64 行；实现 `SocketSubsystemModule.cpp` 第 122-138 行）：`DestroySocketSubsystem( *this )`（第 125 行）→ 遍历各子系统 `Shutdown()`（第 131 行）→ `UnloadModule`（第 136 行）。
 - **`SupportsDynamicReloading` 显式覆写为 `false`**（头文件第 71-74 行）——已产出模块中**第 5 个显式覆写者**（Renderer=`true`；NetCore/IrisCore/NetCommon=`false`）；另有 `SupportsAutomaticShutdown` 显式 `false`（第 81-84 行）。
 
@@ -95,9 +95,9 @@ Sockets/
 
 | 断言 | 取数方式 |
 |---|---|
-| 49 文件 / 30 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Sockets'` 行的 `Files`、`Headers` 字段；公开 15 + Private 15 复核 |
-| 公开侧 15 个 `.h` | `(Get-ChildItem "Runtime/Sockets/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 21 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 49 文件 / 30 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Sockets" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Sockets" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 15 个 `.h` | `[M]` `(Get-ChildItem "Runtime/Sockets/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 21 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Sockets/Sockets.Build.cs").Count`；`Select-String "Runtime/Sockets/Sockets.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Sockets/Sockets.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -106,3 +106,9 @@ Sockets/
 - `modules/PacketHandler-结构.md` —— 同批模块（消费方之一）
 - `modules/NetCommon-结构.md` —— 被本模块引用的公共层（批 10）
 - `modules/NetCore-结构.md` —— 网络栈底层（批 7）
+
+## 更新记录
+
+- 2026-10-11 修正懒加载引用位置：原记"头文件第 51-57 行"，实际在 `SocketSubsystemModule.cpp` 第 51/54 行
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

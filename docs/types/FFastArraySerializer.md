@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # FFastArraySerializer
 
@@ -78,7 +78,7 @@
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）。搜索模式 `\bpublic\s+FFastArraySerializer\b`（`*.h`）：Runtime **3 命中 / 3 文件**（其中 1 处为 `#if 0` 示例，**真实派生 2 个**）；EnhancedInput **0**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**。搜索模式 `\bpublic\s+FFastArraySerializer\b`（`*.h`）：Runtime **3 命中 / 3 文件**（其中 1 处为 `#if 0` 示例，**真实派生 2 个**）；EnhancedInput **0**。
 
 | 派生结构体 | 位置 | 备注 |
 |---|---|---|
@@ -92,9 +92,11 @@
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 1,882 行、类体 407-745 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` 0 条 | 逐行通读统计（该环境工具 count 模式异常，口径已注明） |
-| 派生统计：3 命中 / 3 文件（1 为 `#if 0` 示例）；EnhancedInput 0 | `Select-String -Pattern '\bpublic\s+FFastArraySerializer\b'`（`*.h`），Runtime 与 Plugins 分别独立查询 |
+| 范围外（Plugins）派生：`GameplayAbilities` **6** 个 + 其余插件 **14** 个 | `[H]` 在 `Engine/Plugins` 下按 `public FFastArraySerializer` 派生模式检索（`*.h`），按插件分组计数 |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 1,882 行、类体 407-745 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/Net/Core/Classes/Net/Serialization/FastArraySerializer.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` 0 条 | `[H]` 逐行通读统计（该环境工具 count 模式异常，口径已注明） |
+| 派生统计：3 命中 / 3 文件（1 为 `#if 0` 示例）；EnhancedInput 0 | `[H]` `Select-String -Pattern '\bpublic\s+FFastArraySerializer\b'`（`*.h`），Runtime 与 Plugins 分别独立查询 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -103,3 +105,11 @@
 - `modules/GameplayTasks-结构.md` —— 公开依赖 NetCore 的模块（同批产出）
 - `modules/CoreUObject-结构.md` —— `CoreNet.h`（网络原语）的宿主模块
 - `types/UObject.md` —— 典型宿主对象（已校验）
+
+## 更新记录
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

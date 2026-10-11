@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Engine 模块结构
 
@@ -172,9 +172,12 @@ Engine/
 
 | 断言 | 取数方式 |
 |---|---|
-| 4,037 文件 / 2,404 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Engine'` 行的 `Files`、`Headers` 字段 |
-| `Classes/` 908、`Public/` 1,296 个 `.h`；顶层 390 个 `.h`、37 / 46 个子目录 | `(Get-ChildItem "Runtime/Engine/Classes" -Recurse -File -Filter *.h).Count` 等目录计数命令 |
-| `Engine.Build.cs` 521 行、25 处 `if`、1 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 公开侧合计 **2,204** 个 `.h`（`Classes/` **908** + `Public/` **1,296**） | `[M]` `(Get-ChildItem "Runtime/Engine/Classes" -Recurse -File -Filter *.h).Count` → 908；`(Get-ChildItem "Runtime/Engine/Public" -Recurse -File -Filter *.h).Count` → 1,296 |
+| `Classes/Tests/` **2** 个 `.h`；`Private/Tests/` 顶层 **25** 项 | `[M]` `(Get-ChildItem "Runtime/Engine/Classes/Tests" -Recurse -File -Filter *.h).Count` → 2；`(Get-ChildItem "Runtime/Engine/Private/Tests").Count` → 25（19 文件 + 6 子目录） |
+| `SupportsDynamicReloading` 模块内 **0** 命中 | `[H]` 对 `Runtime/Engine/` 全树按 `SupportsDynamicReloading` 检索 → **0**（本模块无生命周期覆写行为） |
+| 4,037 文件 / 2,404 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Engine" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Engine" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| `Classes/` 908、`Public/` 1,296 个 `.h`；顶层 390 个 `.h`、37 / 46 个子目录 | `[M]` `(Get-ChildItem "Runtime/Engine/Classes" -Recurse -File -Filter *.h).Count` 等目录计数命令 |
+| `Engine.Build.cs` 521 行、25 处 `if`、1 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Engine/Engine.Build.cs").Count`；`Select-String "Runtime/Engine/Engine.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Engine/Engine.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 辅助函数展开 | UBT `ModuleRules.cs` 第 1747-1762（Iris）与 1793-1813（Physics）行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -190,3 +193,7 @@ Engine/
 ## 更新记录
 
 - 2026-10-10 修正「四、对外暴露面」20 处路径（模块内相对形式 → 安装根完整形式）；修正「取数说明」命令示例路径分隔符（反斜杠 → 正斜杠）——两者均由 `verify-refs.ps1` 机器初筛报出
+
+- 2026-10-11 「取数说明」补入 3 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

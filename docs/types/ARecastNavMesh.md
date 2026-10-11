@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # ARecastNavMesh
 
@@ -85,7 +85,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）。搜索模式 `\bpublic\s+ARecastNavMesh\b`（`*.h`）：Runtime **0 命中**；EnhancedInput **0**（另以 `Engine/Source` 全树复核仍为 0；同模式命中的仅前向声明，如 `RecastNavMesh.h` 第 54 行）。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**。搜索模式 `\bpublic\s+ARecastNavMesh\b`（`*.h`）：Runtime **0 命中**；EnhancedInput **0**（另以 `Engine/Source` 全树复核仍为 0；同模式命中的仅前向声明，如 `RecastNavMesh.h` 第 54 行）。
 
 | 派生类 | — |
 |---|---|
@@ -97,9 +97,10 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 1,680 行、类体 570-1643 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| `virtual` 89 / `override` 79 | `Select-String -Pattern '\bvirtual\b' / '\boverride\b'` 全匹配计数（同目录 `RecastNavMeshGenerator.h` 35 处为对照） |
-| 派生统计：0 命中 | `Select-String -Pattern '\bpublic\s+ARecastNavMesh\b'`（`*.h`） |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 1,680 行、类体 570-1643 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h").Count`（同文件 `^};` 检索定类体区间） |
+| `virtual` 89 / `override` 79 | `[M]` 类体内计数（第 570-1643 行）：`Select-String "Engine/Source/Runtime/NavigationSystem/Public/NavMesh/RecastNavMesh.h" -Pattern 'virtual' -AllMatches -Range 570-1643`；同文件同区间 `-Pattern 'override' -AllMatches -Range 570-1643` |
+| 派生统计：0 命中 | `[H]` `Select-String -Pattern '\bpublic\s+ARecastNavMesh\b'`（`*.h`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -108,3 +109,10 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `types/UNavigationSystemV1.md` —— 导航系统（批 8）
 - `modules/NavigationSystem-结构.md` —— ARecastNavMesh 的真实归属模块（批 8）
 - `types/AAIController.md` —— 主要消费方（批 8）
+
+## 更新记录
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对
+- 2026-10-11 「`virtual` 89 / `override` 79」明确为**类体内**（第 570-1643 行）口径，命令用 `-Range` 复算（全文为 92 / 80）

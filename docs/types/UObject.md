@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UObject
 
@@ -70,7 +70,7 @@ UObjectBase                            （Engine/Source/Runtime/CoreUObject/Publ
 | `PostReinitProperties()`（232） | 属性被覆盖后（含从 CDO 初始化子对象）；一生可多次（注释 228-232） | 与只调一次的 `PostInitProperties` 相区分 |
 | `PostCDOContruct()`（238） | CDO 的 C++ 构造函数之后（注释 234-238） | 处理 CDO 构造递归 |
 | `PostCDOCompiled(...)`（250） | 蓝图编译器生成 CDO 完成后（注释 245-252） | editor |
-| `PreSaveRoot(...)`（278） | `SavePackage` 中、保存根对象之前（注释 255-262） | 返回值传给 `PostSaveRoot` |
+| `PreSaveRoot(...)`（262） | `SavePackage` 中、保存根对象之前（注释 255-262） | 返回值传给 `PostSaveRoot` |
 | `PostSaveRoot(...)`（270） | 包保存完成后做清理（注释 264-270） | — |
 | `IsReadyForAsyncPostLoad()`（340） | 异步加载中、`PostLoad()` 之前（注释 337-340） | — |
 | `PostLoad()`（346） | 对象从磁盘加载后立即；不用于新建对象（注释 342-346） | 默认在游戏线程执行 |
@@ -105,7 +105,7 @@ UObjectBase                            （Engine/Source/Runtime/CoreUObject/Publ
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件），引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+UObject\b`（`*.h`，区分大小写）：Runtime 命中 **648 行 / 575 文件**；EnhancedInput 命中 **8 行**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**，引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+UObject\b`（`*.h`，区分大小写）：Runtime 命中 **648 行 / 575 文件**；EnhancedInput 命中 **8 行**。
 
 直接派生类数量级为数百，**完整枚举不可读**——下表列代表性直接派生类，全量清单按「取数说明」中的命令复现。
 
@@ -127,10 +127,11 @@ UObjectBase                            （Engine/Source/Runtime/CoreUObject/Publ
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| `Object.h` 1,932 行、类体 98-1839、120 处 `virtual` | `ReadAllLines` 计数 + `^\};` 检索 + `virtual` 全匹配计数 |
-| 派生统计：Runtime 648 行 / 575 文件；EnhancedInput 8 行 | `Select-String -Pattern '\bpublic\s+UObject\b' -CaseSensitive`（`*.h`；行数 = 匹配行总数，文件数 = 按 Path 分组计数） |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| `Object.h` 1,932 行、类体 98-1839、120 处 `virtual` | `[H]` `ReadAllLines` 计数 + `^\};` 检索 + `virtual` 全匹配计数 |
+| 派生统计：Runtime 648 行 / 575 文件；EnhancedInput 8 行 | `[H]` `Select-String -Pattern '\bpublic\s+UObject\b' -CaseSensitive`（`*.h`；行数 = 匹配行总数，文件数 = 按 Path 分组计数） |
 | 全量派生清单复现 | `search_content: pattern="\bpublic\s+UObject\b" glob="*.h"`，范围 `Runtime` 与 `Engine/Plugins/EnhancedInput/Source` |
-| 基类链 3 级 | 三个类声明行实测：`UObjectBase.h` 第 66 行 / `UObjectBaseUtility.h` 第 44 行 / `Object.h` 第 98 行 |
+| 基类链 3 级 | `[H]` 三个类声明行实测：`UObjectBase.h` 第 66 行 / `UObjectBaseUtility.h` 第 44 行 / `Object.h` 第 98 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -143,3 +144,9 @@ UObjectBase                            （Engine/Source/Runtime/CoreUObject/Publ
 ## 更新记录
 
 - 2026-10-10 修正「二、继承链」与「七、派生类」共 14 处路径写法：模块内相对形式 → 相对安装根完整形式（`Engine/Source/Runtime/...`），符合 `_meta/convention.md` 第二节；其中 8 处由 `verify-refs.ps1` 初筛报出（`Engine/Classes/...` 形式解析失败）
+
+- 2026-10-11 修正 §5.1 `PreSaveRoot` 行号引用（原 278 → 实际 262；278 行是 `PreSave`）
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

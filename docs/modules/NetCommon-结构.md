@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # NetCommon 模块结构
 
@@ -23,7 +23,7 @@ Net/Common/
 ├── NetCommon.Build.cs                                  # 20 行、0 处 if 分支
 ├── Private/Net/Common/NetCommonModule.cpp              # 唯一实现（第 7-8 行"Force export"强制包含 PacketTraits.h）
 └── Public/Net/Common/
-    ├── Packets/PacketTraits.h     # FOutPacketTraits(20) / FInPacketTraits(46)，均在 UE::Net
+    ├── Packets/PacketTraits.h     # FOutPacketTraits(20) / FInPacketTraits(46)，均在**全局命名空间**
     ├── Packets/PacketView.h       # FPacketBufferView(18) / FPacketDataView(47) / FReceivedPacketView(112) / FPacketTimestamp(134)
     └── Sockets/SocketErrors.h     # ESocketErrors(8)（62 行枚举）
 ```
@@ -56,8 +56,8 @@ Net/Common/
 | 头文件 | 提供的能力 |
 |---|---|
 | `Engine/Source/Runtime/Net/Common/Public/Net/Common/Packets/PacketView.h` | `FPacketDataView`（第 47 行）→ `types/FPacketDataView.md`；含 `FReceivedPacketView`（112）/ `FPacketBufferView`（18）/ `FPacketTimestamp`（134） |
-| `Engine/Source/Runtime/Net/Common/Public/Net/Common/Packets/PacketTraits.h` | `FOutPacketTraits`（第 20 行）/ `FInPacketTraits`（第 46 行），均在 `UE::Net` |
-| `Engine/Source/Runtime/Net/Common/Public/Net/Common/Sockets/SocketErrors.h` | `ESocketErrors`（第 8 行，62 行枚举；`Engine/Source` 内 17 个文件引用） |
+| `Engine/Source/Runtime/Net/Common/Public/Net/Common/Packets/PacketTraits.h` | `FOutPacketTraits`（第 20 行）/ `FInPacketTraits`（第 46 行），均在**全局命名空间**（`namespace UE::Net` 仅包住一行前置声明） |
+| `Engine/Source/Runtime/Net/Common/Public/Net/Common/Sockets/SocketErrors.h` | `ESocketErrors`（第 8 行，62 行枚举；Runtime 内 17 个文件引用（Editor 另 2 个）） |
 
 > **模块无任何导出宏**（不存在 `NETCOMMON_API`）；类型为纯 C++（无反射）。跨模块可见性经 include path 传递：`Sockets` 模块公开引用；Engine 模块的 Build.cs 以 `PublicIncludePathModuleNames` 引用（**仅包含路径、非链接依赖**）。
 
@@ -86,8 +86,9 @@ Net/Common/
 
 | 断言 | 取数方式 |
 |---|---|
-| 5 文件 / 3 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'NetCommon'` 行的 `Files`、`Headers` 字段；`(Get-ChildItem "Runtime/Net/Common" -Recurse -File).Count` |
-| Build.cs 20 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| `SupportsDynamicReloading`：本模块为已产出模块中第 **4** 个显式覆写者 | `[H]` 逐模块核对创建函数：`Renderer`(true) / `NetCore`(false) / `IrisCore`(false) / **本模块**(false) = 第 **4** 个 |
+| 5 文件 / 3 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Net/Common" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Net/Common" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| Build.cs 20 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Net/Common/NetCommon.Build.cs").Count`；`Select-String "Runtime/Net/Common/NetCommon.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Net/Common/NetCommon.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -96,3 +97,9 @@ Net/Common/
 - `modules/NetCore-结构.md` —— 公开依赖本模块（批 7）
 - `modules/IrisCore-结构.md` —— 同批模块
 - `modules/RHI-结构.md` —— 另一小模块参照（无自定义模块类 / 极简入口）
+
+## 更新记录
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

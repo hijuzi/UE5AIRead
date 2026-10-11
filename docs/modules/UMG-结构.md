@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UMG 模块结构
 
@@ -27,7 +27,7 @@ UMG/
 └── Private/                      # 实现（6 个子目录 + 12 个文件；含 UserWidget.cpp 等）
 ```
 
-- 无 `Internal/`、无 `Tests/`（实测）。
+- 无 `Internal/`、`Tests/` 仅 `Private/Binding/States/Tests/` 下一处。
 
 ## 三、依赖关系
 
@@ -114,7 +114,7 @@ UMG/
 1. **类声明不带类级导出宏**：UE 5.8 的 UMG 采用 `UCLASS(..., MinimalAPI)` + 成员级 `UMG_API`（如 `UserWidget.h` 第 297 行 `UMG_API virtual bool Initialize();`）——`class UMG_API UUserWidget` 形式全库 0 命中（实测）。
 2. **`SlateWrapperTypes.h` 不在 Public 根**：实际路径 `Public/Components/SlateWrapperTypes.h`。
 3. **构建表方向勿写反**：UMG → `Slate` / `SlateCore` / `Core` 均为**私有**依赖。
-4. **无 `Tests/`**（root / Public / Private 均无）。
+4. **无 `Tests/`**（顶层与 `Public/` 无；`Private/Binding/States/Tests/` 下有一处）。
 5. **数字口径**：`UMG.Build.cs` 62 行、1 处 `if`、0 处三方静态调用；公开侧 164 个 `.h`。取数命令见「取数说明」。
 
 ## 取数说明
@@ -123,9 +123,9 @@ UMG/
 
 | 断言 | 取数方式 |
 |---|---|
-| 315 文件 / 168 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'UMG'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 164 个 `.h`、8 个子目录 | `(Get-ChildItem "Runtime\UMG\Public" -Recurse -File -Filter *.h).Count`、目录计数命令 |
-| Build.cs 62 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 315 文件 / 168 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/UMG" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/UMG" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 164 个 `.h`、8 个子目录 | `[M]` `(Get-ChildItem "Runtime\UMG\Public" -Recurse -File -Filter *.h).Count`、目录计数命令 |
+| Build.cs 62 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/UMG/UMG.Build.cs").Count`；`Select-String "Runtime/UMG/UMG.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/UMG/UMG.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -134,3 +134,9 @@ UMG/
 - `modules/Slate-结构.md`、`modules/SlateCore-结构.md` —— 底层 UI 模块（同批产出）
 - `types/SWidget.md`、`types/SCompoundWidget.md` —— Slate 侧基类（同批产出）
 - `modules/Engine-结构.md` —— `UUserWidget` 宿主框架模块（已校验）
+
+## 更新记录
+
+- 2026-10-11 修正「无 `Tests/`」结论：`Private/Binding/States/Tests/` 下实有 `WidgetStateBitfieldTests.cpp`（原文两处均作"均无"）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

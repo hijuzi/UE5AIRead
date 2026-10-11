@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UNavigationSystemV1
 
@@ -100,9 +100,9 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 1,530 行、类体 290-1486 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` ≥61 条 | content 模式（28 条随输出截断，计入下限）；count 模式在本环境异常已注明 |
-| 派生 0 命中 | `Select-String -Pattern '\bpublic\s+UNavigationSystemV1\b'`（`*.h`）+ 字面量复核 |
+| 文件 1,530 行、类体 290-1486 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/NavigationSystem/Public/NavigationSystem.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` ≥61 条 | `[H]` content 模式（28 条随输出截断，计入下限）；count 模式在本环境异常已注明 |
+| 派生 0 命中 | `[H]` `Select-String -Pattern '\bpublic\s+UNavigationSystemV1\b'`（`*.h`）+ 字面量复核 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -111,3 +111,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `modules/AIModule-结构.md`、`types/AAIController.md` —— 导航的主要消费方（同批产出）
 - `modules/Engine-结构.md` —— `UNavigationSystemBase` 定义模块
 - `types/UObject.md` —— 基类链终点（已校验）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

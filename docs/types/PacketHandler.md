@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # PacketHandler
 
@@ -27,7 +27,7 @@
 文件：Engine/Source/Runtime/PacketHandlers/PacketHandler/Public/PacketHandler.h （973 行）
 行 255：class PacketHandler
 行 734：类体结束（};）
-配套：委托声明（第 58-76 行）；命名空间 UE::Handler（第 83-120 行，含 State/Mode 枚举与 ProcessedPacket/BufferedPacket 结构）
+配套：委托声明（第 58-76 行）；命名空间 UE::Handler（第 83-120 行，含 State/Mode 枚举；`ProcessedPacket`/`BufferedPacket` 在**全局命名空间**（第 125/158 行））
 ```
 
 ## 四、公开 API
@@ -81,7 +81,7 @@
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）。搜索模式 `\bpublic\s+PacketHandler\b`（`*.h`）：Runtime **0 命中**；EnhancedInput **0**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**。搜索模式 `\bpublic\s+PacketHandler\b`（`*.h`）：Runtime **0 命中**；EnhancedInput **0**。
 
 | 派生类 | — |
 |---|---|
@@ -93,9 +93,10 @@
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 973 行、类体 255-734 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` = 0 | `Select-String -Pattern '\bvirtual\b'` 逐行核对（前 12 个命中全在 HandlerComponent 段 739-956） |
-| 派生统计：0 命中 | `Select-String -Pattern '\bpublic\s+PacketHandler\b'`（`*.h`） |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 973 行、类体 255-734 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/PacketHandlers/PacketHandler/Public/PacketHandler.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` = 0 | `[H]` `Select-String -Pattern '\bvirtual\b'` 逐行核对（前 12 个命中全在 HandlerComponent 段 739-956） |
+| 派生统计：0 命中 | `[H]` `Select-String -Pattern '\bpublic\s+PacketHandler\b'`（`*.h`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -104,3 +105,11 @@
 - `types/FSocket.md` —— 同批类型
 - `modules/NetCommon-结构.md` —— `FOutPacketTraits`/`FInPacketTraits` 在此被组件消费（批 10）
 - `modules/NetCore-结构.md` —— `FBitReader`/`FBitWriter` 体系（批 7）
+
+## 更新记录
+
+- 2026-10-11 修正命名空间归属：`ProcessedPacket`/`BufferedPacket` 在全局命名空间（第 125/158 行），非 `UE::Handler`；与第七节统一
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

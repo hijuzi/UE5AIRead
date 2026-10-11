@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # FImplicitObject
 
@@ -61,7 +61,7 @@ Chaos::FChaosRefCountedObject（Engine/Source/Runtime/Experimental/Chaos/Public/
 | `GetTypeName()`（虚，第 414 行）/ `GetMaterialIndex(uint32) const`（虚，第 418 行） | 名称 / 材质索引 | 见左 |
 | `GetMaterialIndex` / `GetOffsetOfMargin()`（static，第 214 行）等 | 反射偏移辅助 | 见左 |
 
-> **不存在**：`GetLocalBounds`（实测 0 命中）；`Support` / `SupportCore` 是**派生几何类**的成员（如 `Box.h` 第 378 行），基类没有。
+> **不存在**：`GetLocalBounds`（本模块（Chaos）内 0 命中）；`Support` / `SupportCore` 是**派生几何类**的成员（如 `Box.h` 第 378 行），基类没有。
 
 ## 五、扩展点
 
@@ -92,7 +92,7 @@ Chaos::FChaosRefCountedObject（Engine/Source/Runtime/Experimental/Chaos/Public/
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）。搜索模式 `\bpublic\s+FImplicitObject\b`（`*.h`）：Runtime **23 命中 / 20 文件**（全部位于 `Chaos/Public/Chaos/`）；EnhancedInput **0**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**。搜索模式 `\bpublic\s+FImplicitObject\b`（`*.h`）：Runtime **23 命中 / 20 文件**（全部位于 `Chaos/Public/Chaos/`）；EnhancedInput **0**。
 
 | 代表派生类 | 位置 |
 |---|---|
@@ -112,9 +112,10 @@ Chaos::FChaosRefCountedObject（Engine/Source/Runtime/Experimental/Chaos/Public/
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 640 行、类体 110-603 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` 44 处 | content 模式枚举（44 行清单）+ 全文件通读交叉核对；含 2 行注释提及"virtual" |
-| 派生统计：23 命中 / 20 文件；EnhancedInput 0 | `Select-String -Pattern '\bpublic\s+FImplicitObject\b'`（`*.h`） |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 文件 640 行、类体 110-603 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/Experimental/Chaos/Public/Chaos/ImplicitObject.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` 44 处 | `[H]` content 模式枚举（44 行清单）+ 全文件通读交叉核对；含 2 行注释提及"virtual" |
+| 派生统计：23 命中 / 20 文件；EnhancedInput 0 | `[H]` `Select-String -Pattern '\bpublic\s+FImplicitObject\b'`（`*.h`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -123,3 +124,11 @@ Chaos::FChaosRefCountedObject（Engine/Source/Runtime/Experimental/Chaos/Public/
 - `types/ARecastNavMesh.md` —— 同批类型
 - `modules/PhysicsCore-结构.md` —— 引擎物理接口层（批 7）
 - `types/FRHIResource.md` —— 另一"引用计数基类"参照（批 4）
+
+## 更新记录
+
+- 2026-10-11 「`GetLocalBounds` 0 命中」限定口径到本模块（Chaos 之外普遍存在同名标识符）
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

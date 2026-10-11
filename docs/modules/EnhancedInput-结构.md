@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # EnhancedInput 模块结构
 
@@ -118,9 +118,10 @@ EnhancedInput/
 
 | 断言 | 取数方式 |
 |---|---|
-| 42 文件 / 21 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'EnhancedInput'` 行的 `Files`、`Headers` 字段 |
-| Build.cs 27 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
-| 公开侧 21 个 `.h` | 目录枚举（`Public/` + `Public/UserSettings/`） |
+| `WITH_EDITOR` 下注册 **4** 条 cheat 命令 | `[H]` 逐行通读注册段（第 254 / 261 / 268 / 275 行）：`Input.+action`、`Input.-action`、`Input.+key`、`Input.-key` = **4** |
+| 42 文件 / 21 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source/EnhancedInput" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source/EnhancedInput" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| Build.cs 27 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Plugins/EnhancedInput/Source/EnhancedInput/EnhancedInput.Build.cs").Count`；`Select-String "Engine/Plugins/EnhancedInput/Source/EnhancedInput/EnhancedInput.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Engine/Plugins/EnhancedInput/Source/EnhancedInput/EnhancedInput.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
+| 公开侧 21 个 `.h` | `[H]` 目录枚举（`Public/` + `Public/UserSettings/`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -129,3 +130,9 @@ EnhancedInput/
 - `modules/Engine-结构.md` —— 承载输入组件的框架模块（已校验）
 - `modules/Core-结构.md` —— 上游地基模块
 - `flows/UObject创建流程.md` —— 对象创建主路径（已校验）
+
+## 更新记录
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # TimeManagement 模块结构
 
@@ -100,9 +100,10 @@ TimeManagement/
 
 | 断言 | 取数方式 |
 |---|---|
-| 55 文件 / 29 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'TimeManagement'` 行的 `Files`、`Headers` 字段；公开 26 + Private 3 复核 |
-| 公开侧 26 个 `.h`（顶层 16） | `(Get-ChildItem "Runtime/TimeManagement/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 19 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 本模块为第 **2** 个"零生命周期覆写"模块 | `[H]` 逐模块核对 `StartupModule` / `ShutdownModule`：`Navmesh`（复用 `FDefaultModuleImpl`）为第 **1** 个，本模块第 **2** 个 |
+| 55 文件 / 29 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/TimeManagement" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/TimeManagement" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 26 个 `.h`（顶层 16） | `[M]` `(Get-ChildItem "Runtime/TimeManagement/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 19 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/TimeManagement/TimeManagement.Build.cs").Count`；`Select-String "Runtime/TimeManagement/TimeManagement.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/TimeManagement/TimeManagement.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -111,3 +112,9 @@ TimeManagement/
 - `modules/UniversalObjectLocator-结构.md` —— 同批模块
 - `modules/MovieScene-结构.md`、`modules/LevelSequence-结构.md` —— 主要消费方（批 6/批 9）
 - `modules/Engine-结构.md` —— `UTimecodeProvider` 归属
+
+## 更新记录
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

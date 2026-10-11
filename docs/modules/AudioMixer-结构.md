@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # AudioMixer 模块结构
 
@@ -26,7 +26,7 @@ AudioMixer/
 │   ├── 顶层：AudioMixerDevice.h / AudioMixerSubmix.h / AudioMixerBus.h / AudioMixerBlueprintLibrary.h /
 │   │        AudioBusSubsystem.h / AudioDeviceNotificationSubsystem.h / AudioMixerModule.h /
 │   │        FileDecoder.h / SoundWaveDecoder.h / IAudioMixerGeneratorSource.h / AudioRenderSchedulerTester.h
-└── Private/              # 5 个子目录（Components/ Effects/ Generators/ Quartz/ SoundFileIO/）+ 16 .h + 20 .cpp
+└── Private/              # 5 个子目录（Components/ Effects/ Generators/ Quartz/ SoundFileIO/）+ 16 .h + 37 .cpp
 ```
 
 - 无 `Internal/`、无 `Tests/`（实测 0 命中）。
@@ -113,9 +113,9 @@ AudioMixer/
 
 | 断言 | 取数方式 |
 |---|---|
-| 78 文件 / 40 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'AudioMixer'` 行的 `Files`、`Headers` 字段；公开 19 + Classes 5 + Private 16 复核 |
-| 公开侧 19 个 `.h` | `(Get-ChildItem "Runtime/AudioMixer/Public" -Recurse -File -Filter *.h).Count` |
-| Build.cs 56 行、0 处 `if`、5 库三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 78 文件 / 40 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/AudioMixer" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/AudioMixer" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 19 个 `.h` | `[M]` `(Get-ChildItem "Runtime/AudioMixer/Public" -Recurse -File -Filter *.h).Count` |
+| Build.cs 56 行、0 处 `if`、1 处三方静态调用（含 5 个库：`UEOgg` / `Vorbis` / `VorbisFile` / `libOpus` / `UELibSampleRate`，第 39-45 行） | `[M]` `[System.IO.File]::ReadAllLines("Runtime/AudioMixer/AudioMixer.Build.cs").Count`；`Select-String "Runtime/AudioMixer/AudioMixer.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/AudioMixer/AudioMixer.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -124,3 +124,10 @@ AudioMixer/
 - `modules/AudioExtensions-结构.md` —— 同批模块（扩展契约层）
 - `modules/Engine-结构.md` —— `FAudioDevice` 基类所在模块
 - `modules/RenderCore-结构.md` —— 另一"含第三方静态依赖/强制加载子模块"参照
+
+## 更新记录
+
+- 2026-10-11 修正 `Private/` 下 `.cpp` 计数（20 → 37）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对
+- 2026-10-11 口径更正：「5 库三方静态调用」改为「**1 处**三方静态调用（含 5 个库）」——原文把"库数"写成"调用次数"口径，与命令不符

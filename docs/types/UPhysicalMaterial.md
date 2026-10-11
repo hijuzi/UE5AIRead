@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # UPhysicalMaterial
 
@@ -64,7 +64,7 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 | `static DetermineSurfaceType(...)` | 由材质推导表面类型 | 第 242 行 |
 | `MaterialHandle`（`TUniquePtr<FPhysicsMaterialHandle>`，private 语义的句柄） / `UserData`（`FChaosUserData`） | 底层句柄与用户数据 | 第 219 / 221 行 |
 
-> **不存在**（实测 0 命中）：`GetFriction` / `GetRestitution` / `GetFrictionCombineMode` / `GetRestitutionCombineMode` / `GetDensity` / `GetSurfaceType`（材质访问器形式）——请直接读字段；`GetPhysicalMaterialFromPrimitive` 全引擎 0 命中。
+> **不存在**（本类内 0 命中）：`GetFriction` / `GetRestitution` / `GetFrictionCombineMode` / `GetRestitutionCombineMode` / `GetDensity` / `GetSurfaceType`（材质访问器形式）——请直接读字段；`GetPhysicalMaterialFromPrimitive` 全引擎 0 命中。
 
 ## 五、扩展点
 
@@ -99,10 +99,11 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 文件 250 行、类体 102-247 | `[System.IO.File]::ReadAllLines(...).Count` + `^};` 检索 |
-| 类内 `virtual` 5 条 | `Select-String -Pattern 'virtual'` 全匹配 + 逐段核对 |
+| 搜索范围 `Engine/Source` 全树，其中 Runtime **291** 个模块 | `[R]` 对 `_meta/engine-modules.json` 按 `Category` 字段等于 `Runtime` 计数 = **291**；搜索范围另含 `EnhancedInput` 插件 |
+| 文件 250 行、类体 102-247 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/PhysicsCore/Public/PhysicalMaterials/PhysicalMaterial.h").Count`（同文件 `^};` 检索定类体区间） |
+| 类内 `virtual` 5 条 | `[H]` `Select-String -Pattern 'virtual'` 全匹配 + 逐段核对 |
 | `UPhysicalMaterialCore` 不存在 | 全 `Engine/Source`（及 Intermediate）内容搜索 0 命中；5.5/5.7 源码对照复核 |
-| 派生 0 命中 | `Select-String -Pattern '\bpublic\s+UPhysicalMaterial\b'`（`*.h`） |
+| 派生 0 命中 | `[H]` `Select-String -Pattern '\bpublic\s+UPhysicalMaterial\b'`（`*.h`） |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -111,3 +112,11 @@ UObjectBase            （Engine/Source/Runtime/CoreUObject/Public/UObject/UObje
 - `types/UDeveloperSettings.md` —— 同模块 `UPhysicsSettingsCore` 的基类（批 5 产出）
 - `modules/Engine-结构.md` —— `FPhysScene_Chaos` 等 Engine 侧物理入口
 - `types/UObject.md` —— 基类链终点（已校验）
+
+## 更新记录
+
+- 2026-10-11 「获取器 0 命中」限定口径到本类（同模块 `PhysicalMaterialPropertyBase.h:45` 有同名 `GetSurfaceType`）
+
+- 2026-10-11 「取数说明」补入 1 行计数断言取数方式（`convention.md` 4.2 覆盖要求）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

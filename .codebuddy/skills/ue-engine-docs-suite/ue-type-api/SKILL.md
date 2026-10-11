@@ -45,6 +45,9 @@ metadata:
 2. **继承链必须双向。** 只说基类不算完整——但派生类搜索要限定在纳入范围的模块内，并在产物中声明搜索边界，避免让人误以为"没有其他派生类"。
 3. **只读。** 不修改引擎任何文件。写入仅限 `docs/types/`。
 4. **路径写相对形式。** `Engine/Source/Runtime/Core/Public/CoreTypes.h`，不带盘符。
+5. **引用要能被 token 解析。** 三类写法会被 `ue-doc-verify` 判为"引用缺失"，必须规避：
+   模块内相对形式（如 `Engine/Classes/...`）、用 `.../` 缩写中间段、路径后紧跟全角括号不设分隔。
+   写完后自查这三条；规则原文见 `_meta/convention.md` 第 4.1 节。
 
 ## 执行步骤
 
@@ -99,8 +102,8 @@ metadata:
 
 | 形态 | 长相 | 例子 |
 |---|---|---|
-| 类级宏 | `class ENGINE_API AActor` | 类名前带 `*_API` |
-| `MinimalAPI` | `UCLASS(Abstract, MinimalAPI, ...)` + `class UObject` | 只导出 `StaticClass()`，成员另行标注 |
+| 类级宏 | `class IRISCORE_API UNetRefHandleGenerator : public UObject` | 类名前直接带 `*_API`（`NetRefHandleGenerator.h` 第 28 行） |
+| `MinimalAPI` | `UCLASS(..., MinimalAPI)` + `class AActor : public UObject` | 类名前**无**宏，只导出 `StaticClass()`；成员逐个标注 `*_API`（`Actor.h` 第 281/282/288 行） |
 | 逐成员宏 | `class FName` + 成员前 `CORE_API` | 类名前**没有**任何宏 |
 | 逐成员宏 + 编译期开关 | 同一成员在 `#if` 分支里是 `CORE_API` 外链、`#else` 里是 `FORCEINLINE` | `FName` 的 `GetComparisonIndex` 受 `UE_FNAME_OUTLINE_NUMBER` 控制 |
 
@@ -228,7 +231,7 @@ Select-String -Path "docs\types\AActor.md" -Pattern '搜索边界' -Quiet
 输入：`分析一下 UE 的 AActor 类`
 
 应做：按 `A` 前缀定位到 `Engine` 模块 → 搜到 `Actor.h` → 读声明
-（`UCLASS`、`ENGINE_API`、基类 `UObject`）→ 提取公开 API 与虚函数
+（`UCLASS(..., MinimalAPI)`、类声明行**无**导出宏、基类 `UObject`）→ 提取公开 API 与虚函数
 → 在范围内搜派生类 → 写 `docs/types/AActor.md`。
 
 **示例 2：结构体而非 UCLASS 类（边界）**
@@ -266,7 +269,7 @@ Select-String -Path "docs\types\AActor.md" -Pattern '搜索边界' -Quiet
 - [ ] 扩展点区分「可覆写」与「内部虚函数」
 - [ ] 派生类表写明**搜索边界**
 - [ ] 生命周期只写时机，未展开调用链
-- [ ] 数字类断言（派生类数量、链深度等）注明取数命令或实测时点，未凭目视估算
+- [ ] 数字类断言（派生类数量、链深度等）**逐条**在「取数说明」节有对应行，且写清"对象 / 模式 / 大小写 / 递归"四要素（`convention.md` 4.2）；**每行以 `[M]` / `[R]` / `[H]` 开头**声明方法类别，`[M]` 行命令可复制执行且结果与文中数字一致（4.2.1）
 - [ ] 未对引擎目录执行写操作
 - [ ] 已交回主技能更新索引
 

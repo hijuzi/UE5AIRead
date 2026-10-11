@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # Navmesh 模块结构
 
@@ -91,9 +91,9 @@ Build.cs 内调用 **0 处**；Recast 以 `.tps` 登记方式引入（`Recast v1
 
 | 断言 | 取数方式 |
 |---|---|
-| 79 文件 / 30 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'Navmesh'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 30 个 `.h`（顶层 0） | `(Get-ChildItem "Runtime/Navmesh/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 31 行、2 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 79 文件 / 30 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/Navmesh" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/Navmesh" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 30 个 `.h`（顶层 0） | `[M]` `(Get-ChildItem "Runtime/Navmesh/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 31 行、2 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/Navmesh/Navmesh.Build.cs").Count`；`Select-String "Runtime/Navmesh/Navmesh.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/Navmesh/Navmesh.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -102,3 +102,7 @@ Build.cs 内调用 **0 处**；Recast 以 `.tps` 登记方式引入（`Recast v1
 - `modules/NavigationSystem-结构.md` —— 消费者模块（批 8）
 - `modules/Chaos-结构.md` —— 同批模块
 - `modules/AIModule-结构.md` —— `dtCrowd` 的另一消费方（批 8）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # GameplayTags 模块结构
 
@@ -116,9 +116,9 @@ GameplayTags/
 
 | 断言 | 取数方式 |
 |---|---|
-| 27 文件 / 13 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'GameplayTags'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 5 + 7 个 `.h` | 目录枚举（`Classes/`、`Public/` 各一层；合计 12 个 `.h`） |
-| `GameplayTags.Build.cs` 43 行、1 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 27 文件 / 13 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/GameplayTags" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/GameplayTags" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 5 + 7 个 `.h` | `[H]` 目录枚举（`Classes/`、`Public/` 各一层；合计 12 个 `.h`） |
+| `GameplayTags.Build.cs` 43 行、1 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/GameplayTags/GameplayTags.Build.cs").Count`；`Select-String "Runtime/GameplayTags/GameplayTags.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/GameplayTags/GameplayTags.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | `SetupIrisSupport` 展开 | UBT `ModuleRules.cs` 第 1747-1762 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -130,3 +130,7 @@ GameplayTags/
 - `modules/CoreUObject-结构.md` —— 上游地基模块
 - `types/AActor.md` —— 标签查询的常见载体（同批产出）
 - `flows/UObject创建流程.md` —— 对象创建主路径（已校验）
+
+## 更新记录
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

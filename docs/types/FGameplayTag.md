@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-type-api v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # FGameplayTag
 
@@ -57,7 +57,7 @@
 | `ToString()` | 字符串化（inline） | 第 174 行 |
 | `GetTagName()` | 取内部 `FName`（inline） | 第 180 行 |
 | `static const FGameplayTag EmptyTag` | 空标签常量 | 第 212 行 |
-| `explicit FGameplayTag(const FName&)` | 从 `FName` 构造 | 第 219 行 |
+| `explicit FGameplayTag(const FName&)` | 从 `FName` 构造（`protected:`，非公开 API，仅 tag manager 可用） | 第 219 行 |
 | 数据成员 `FName TagName` | 唯一存储（`UPROPERTY`，第 222-223 行） | 第 223 行 |
 
 配套类型（同文件）：`FGameplayTagContainer`（第 247 行）、`FGameplayTagQuery`（第 737 行）、`FGameplayTagQueryExpression`（第 865 行）；同目录：`UGameplayTagsManager`（`Classes/GameplayTagsManager.h` 第 336 行）、`FNativeGameplayTag`（`Public/NativeGameplayTags.h` 第 58 行）。
@@ -66,7 +66,7 @@
 
 ### 5.1 可覆写虚函数
 
-**无。** `FGameplayTag` 全文零虚函数（实测：`virtual` 全匹配 0 处，见取数说明）——不可扩展，按值语义使用。
+**无。** `FGameplayTag` 类体内零虚函数（实测：`virtual` 全匹配 0 处，见取数说明）——不可扩展，按值语义使用。
 
 ### 5.2 不建议覆写的内部虚函数
 
@@ -80,7 +80,7 @@
 
 ## 七、派生类（范围内）
 
-搜索边界：派生类搜索**仅覆盖本版纳入范围的 292 个模块**（Runtime 291 个 + `EnhancedInput` 插件）；引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+FGameplayTag\b`（`*.h`）：Runtime 命中 **0**、EnhancedInput 命中 **0**。
+搜索边界：派生类搜索**覆盖 Runtime 291 个模块 + `EnhancedInput` 插件全部 3 个模块（共 294 个模块）**；引擎其余部分（Editor / Developer / Platforms / 未纳入的 Plugins）未覆盖。搜索模式 `\bpublic\s+FGameplayTag\b`（`*.h`）：Runtime 命中 **0**、EnhancedInput 命中 **0**。
 
 | 派生类 | 模块 |
 |---|---|
@@ -92,9 +92,10 @@
 
 | 断言 | 取数方式（相对基准：`Engine/Source`） |
 |---|---|
-| 零虚函数 | `Select-String "Runtime\GameplayTags\Classes\GameplayTagContainer.h" -Pattern 'virtual' -AllMatches` 全匹配计数 → 0 |
-| 文件 1,142 行、类体 41-230 行 | `[System.IO.File]::ReadAllLines(...)` 计数 + `^};` 检索 |
-| 派生 0 命中 | 模式 `\bpublic\s+FGameplayTag\b`，范围 `Runtime` 与 `Engine/Plugins/EnhancedInput/Source`，glob `*.h` |
+| 搜索边界 294 个模块（Runtime 291 + `EnhancedInput` 插件 3） | `[M]` 插件 3 个模块（含白名单外的 `InputBlueprintNodes` / `InputEditor`）：`(Get-ChildItem "Engine/Plugins/EnhancedInput/Source" -Directory).Count` → 3；Runtime 291 见 `_meta/inventory.md` |
+| 零虚函数 | `Select-String "Runtime\GameplayTags\Classes\GameplayTagContainer.h" -Pattern 'virtual' -AllMatches` 全匹配计数 → 11（11 处均在 FGameplayTag 之外的类型，本类自身 0） |
+| 文件 1,142 行、类体 41-230 行 | `[M]` `[System.IO.File]::ReadAllLines("Engine/Source/Runtime/GameplayTags/Classes/GameplayTagContainer.h").Count`（同文件 `^};` 检索定类体区间） |
+| 派生 0 命中 | `[H]` 模式 `\bpublic\s+FGameplayTag\b`，范围 `Runtime` 与 `Engine/Plugins/EnhancedInput/Source`，glob `*.h` |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
 ## 相关文档
@@ -103,3 +104,11 @@
 - `types/AActor.md` —— 同批产出的 Engine 代表类型
 - `modules/Engine-结构.md` —— 主消费方模块（同批产出）
 - `flows/UObject创建流程.md` —— 对象创建主路径（已校验）
+
+## 更新记录
+
+- 2026-10-11 ①「零虚函数」结论限定到类体（原文误作"全文 0 处"，该文件实有 11 处 `virtual`，均在 `FGameplayTag` 之外的类型）；② `explicit FGameplayTag(const FName&)`（219 行）补注 `protected:`，非公开 API
+
+- 2026-10-11 搜索边界更正：派生搜索实覆盖 **294** 个模块（Runtime 291 + `EnhancedInput` 插件 3），原文误作"纳入范围的 292 个模块"（292 是白名单口径，搜索实际连 `InputBlueprintNodes` / `InputEditor` 一并覆盖，本文件命中的插件侧结果即来自 `InputEditor`）；同时在「取数说明」补入该边界取数方式（`convention.md` 4.2）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对

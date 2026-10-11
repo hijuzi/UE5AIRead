@@ -2,7 +2,7 @@
 > 源码根：Engine/Source
 > 生成技能：ue-module-structure v1.0
 > 生成时间：2026-10-10
-> 校验状态：已校验（2026-10-10）
+> 校验状态：已校验（2026-10-11）
 
 # MovieScene 模块结构
 
@@ -71,7 +71,7 @@ MovieScene/
 | `Engine/Source/Runtime/MovieScene/Public/MovieSceneSignedObject.h` | `UMovieSceneSignedObject`（第 71 行）——序列资产签名基类 |
 | `Engine/Source/Runtime/MovieScene/Public/MovieSceneTrack.h` | `UMovieSceneTrack`（第 203 行） |
 | `Engine/Source/Runtime/MovieScene/Public/MovieSceneSection.h` | `UMovieSceneSection`（第 242 行） |
-| `Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h` | `UMovieSceneSequencePlayer`（第 176 行，`: UObject, IMovieScenePlayer`） |
+| `Engine/Source/Runtime/MovieScene/Public/MovieSceneSequencePlayer.h`、`IMovieSceneSequencePlayerObserver.h` | `UMovieSceneSequencePlayer`（第 176 行，`: UObject, IMovieScenePlayer`） |
 | `Engine/Source/Runtime/MovieScene/Public/IMovieScenePlayer.h` | `IMovieScenePlayer`（第 88 行，纯 C++ 接口） |
 | `Engine/Source/Runtime/MovieScene/Public/MovieSceneBinding.h` | 绑定与引用体系 |
 | `Engine/Source/Runtime/MovieScene/Public/Evaluation/MovieSceneEvaluationTemplate.h` | 求值模板（**在 `Evaluation/` 子目录**） |
@@ -112,9 +112,9 @@ MovieScene/
 
 | 断言 | 取数方式 |
 |---|---|
-| 500 文件 / 287 头文件 | `_meta/engine-modules.json` 中 `Module -eq 'MovieScene'` 行的 `Files`、`Headers` 字段 |
-| 公开侧 280 个 `.h`（顶层 61） | `(Get-ChildItem "Runtime/MovieScene/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
-| Build.cs 39 行、0 处 `if`、0 处三方静态调用 | `[System.IO.File]::ReadAllLines(...).Count`；`\bif\s*\(` 与 `AddEngineThirdPartyPrivateStaticDependencies` 全匹配计数 |
+| 500 文件 / 287 头文件 | `[M]` 引擎磁盘递归计数：`(Get-ChildItem "Runtime/MovieScene" -Recurse -File).Count` 得文件数；`(Get-ChildItem "Runtime/MovieScene" -Recurse -File -Filter *.h).Count` 得头文件数（同 `_meta/engine-modules.json` 口径） |
+| 公开侧 280 个 `.h`（顶层 61） | `[M]` `(Get-ChildItem "Runtime/MovieScene/Public" -Recurse -File -Filter *.h).Count` 与顶层计数 |
+| Build.cs 39 行、0 处 `if`、0 处三方静态调用 | `[M]` `[System.IO.File]::ReadAllLines("Runtime/MovieScene/MovieScene.Build.cs").Count`；`Select-String "Runtime/MovieScene/MovieScene.Build.cs" -Pattern '\bif\s*\(' -AllMatches`；`Select-String "Runtime/MovieScene/MovieScene.Build.cs" -Pattern 'AddEngineThirdPartyPrivateStaticDependencies' -AllMatches` |
 | `SetupIrisSupport` 展开 | UBT `ModuleRules.cs` 第 1747-1762 行 |
 | 全部行号引用 | 2026-10-10 对 UE 5.8.3 源码本机逐条核对 |
 
@@ -124,3 +124,9 @@ MovieScene/
 - `modules/GameplayTasks-结构.md` —— 同批模块
 - `modules/CoreUObject-结构.md` —— `UMovieSceneSignedObject` 的基类链所在模块
 - `modules/Engine-结构.md` —— `LevelSequence` 等消费方参照
+
+## 更新记录
+
+- 2026-10-11 补齐 `Public/*Player*.h` 枚举（漏 `IMovieSceneSequencePlayerObserver.h`）
+
+- 2026-10-11 按规范 4.2.1 为「取数说明」各行加方法标记（`[M]`/`[R]`/`[H]`）；`[M]` 行把原文省略成 `(...)` 的路径补全为白名单可执行命令，现由 `ue-doc-verify` 逐条实际执行比对
