@@ -1,0 +1,16 @@
+# 行尾与文本规范化（仓库级，不依赖各机器上的 core.autocrlf）
+#
+# 背景：本仓库的 shell 脚本由 Git Bash 直接执行（.specify/scripts/bash/*.sh）。
+# 若检出时被转成 CRLF，bash 会报 $'\r': command not found，
+# resolve-template.sh / setup-plan.sh 等会直接失效。
+# 规则：索引侧统一存 LF；工作区形态按文件类型固定，与本地 core.autocrlf 无关。
+
+* text=auto
+
+# 直接由 shell 执行 —— 必须 LF
+*.sh text eol=lf
+
+# Windows 原生脚本 —— 固定 CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
