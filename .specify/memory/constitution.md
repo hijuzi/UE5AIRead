@@ -1,50 +1,226 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# UE5AIRead 项目章程
+
+本工程把 **UE5 5.8 引擎源码**转化为**可核验的中文技术文档**，服务两类消费者：程序员阅读理解，
+以及 AI 辅助编程时的 API 检索。章程约束的对象是**文档产物**、**技能套件**、**工作方式**与
+**开发流程**——不是引擎源码自身。
+
+**术语约定**：本章程所称「**产物**」，指 `docs/modules/`、`docs/types/`、`docs/flows/` 下
+由 ②③④ 产出的文档——原则 III 与原则 V 的全文强制**只覆盖**这三类。
+`docs/_meta/`、`docs/ai/` 与 `docs/` 根为**元信息 / 索引 / 说明类**，不适用上述两条强制，
+其规则见下文「文档库与产物约束」节。
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. 引擎源码只读，产物单向流入 `docs/`（NON-NEGOTIABLE）
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- 引擎安装根（见 `docs/_meta/convention.md`「本机环境」块）及其同级的一切文件 MUST 视为只读；
+  任何技能、脚本、自动化或人工操作都 MUST NOT 对其执行写操作。
+- 文档产物 MUST 只写入仓库根的 `docs/`，路径由 `convention.md`『目录与命名』节固定；
+  MUST NOT 写入技能目录或仓库其他位置。技能目录只承载技能本体
+  （`SKILL.md`、`scripts/`、`assets/`、`references/`、`evaluation/`）。
+- 已发布产物的事实内容 MUST NOT 被静默改写。补充与修正 MUST 在原文上叠加，
+  并在产物末尾「更新记录」节留痕（格式见 `convention.md`『校验状态与修正留痕』节）。
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**理由**：引擎是外部依赖，重装或换机即整体漂移；`docs/` 才是可被 git 追踪、可被 review、
+可脱离技能独立分享的资产。一旦允许就地改写事实或反向写入引擎树，
+文档的可信度与可复现性会同时失效。
+本条的保障是**纪律 + 只读工具面**，不是机器检测：`verify-refs.ps1` 只核对版本锚点
+（`Engine/Build/Build.version`），**不检测引擎文件是否被改动**——整树 mtime 会随重装
+或整目录复制整体漂移，已明确排除作为证据（见原则 III）。
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. 证据先行，不推断实现（NON-NEGOTIABLE）
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- 每处代码引用 MUST 是实际打开原文件核对过的「文件 + 行号」。
+  MUST NOT 凭记忆或"常见写法"补全 API 名、路径、命名空间与导出宏。
+- 任何「零命中 / 搜不到 / 不存在」的结论，在下定论之前 MUST 先确认**证据源本身完整**
+  （如运行 `check-source.ps1`）。证据源不完整时，结论 MUST 记为「本机不可判定」，
+  MUST NOT 写成"不存在"。
+- 无法确认的事实 MUST 显式标注为「本机不可判定」，MUST NOT 用"UE 通常是这样"补全。
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**理由**：本套件曾把"仅头文件安装导致的看不见"误判成"这两个模块没有入口类"，
+错误结论写进产物之后才发现（补齐源码后确认为 `FCoreModule` / `FCoreUObjectModule`）。
+这类错误会直接误导把 `docs/` 当作唯一事实来源的 AI 消费者。
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. 版本锚点与文档头强制
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- `docs/modules/`、`docs/types/`、`docs/flows/` 下的每份产物 MUST 以五字段文档头开头：
+  引擎版本、源码根、生成技能、生成时间、校验状态。字段值 MUST 从
+  `convention.md`「本机环境」块复制，MUST NOT 自行填写。
+- 引擎版本号 MUST 取自 `Engine/Build/Build.version`。MUST NOT 依赖 Launcher Manifest
+  （实测重装后其条目会丢失），MUST NOT 以文件时间戳（mtime）判定引擎身份或"是否被改动"
+  ——整棵源码树的 mtime 会随重装或整目录复制整体漂移，不构成证据。
+- 校验状态初始为 `未校验`，只由 `ue-doc-verify` 核对通过后回填 `已校验（YYYY-MM-DD）`。
+  日期一律 `YYYY-MM-DD`。
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**理由**：没有版本锚点的引擎文档，在引擎升版后无法判断是否仍然有效——这一条不可省略。
+
+### IV. 规范单一真源，格式机器可解析
+
+- 全体技能 MUST 共享并遵守 `docs/_meta/convention.md`（单一真源）。
+  格式争议一律以该文件为准，技能 MUST NOT 各自定义格式。
+- 文档中的引擎路径 MUST 相对引擎安装根、以 `Engine/` 开头、使用正斜杠、不含盘符。
+  绝对路径只允许出现在 `convention.md` 的「本机环境」块，以及规范中**显式标注为反例**的路径
+  （本章程亦遵守此项，故不写出具体盘符）。
+- 引用 MUST 采用规范『引用格式』节的块格式，并遵守该节 4.1 的三条机器解析规避：
+  模块内相对路径（`Public/...`）、`.../` 缩写中间段、路径后紧跟全角括号——
+  三者都会被 `verify-refs.ps1` 误判为"引用缺失"。
+- 正文用中文；类名、函数名、宏、变量名、文件名、模块名、配置项 MUST 保留英文原名，
+  统一用反引号包裹，不翻译、不改大小写。
+
+**理由**：套件协同的唯一前提是"规范只定义一次"，且放在随文档库走的固定路径
+（而非某个技能目录内）。引用格式一旦不可机检，
+`ue-doc-verify` 对全库上千处行号的回查就无法成立。
+
+### V. 数字断言必须可复算
+
+- 产物中每个「N 处 / N 个 / N 行 / N 命中 / N 文件」断言，MUST 在文末「取数说明」节有对应行；
+  查不到对应行的数字视为不合规。
+- 每行取数方式 MUST 以方法标记开头：`[M]` 机器可复算（MUST 给出白名单形式命令，
+  且命令实跑结果须与断言一致）、`[R]` 引用型（MUST 写明来源路径）、
+  `[H]` 人工通读型（MUST 写明通读对象与判据）。未声明标记即不合规。
+- 计数口径 MUST 写进命令本身（数的对象、匹配模式、是否区分大小写、递归范围），
+  因为口径漂移只能靠命令暴露，不能靠复读发现。
+
+**理由**：历史数据反复显示同一模式——**行号类引用的准确率极高，计数类断言则反复出错**。
+差别不在"看错"，而在数字没把口径写进命令里。
+实测记录见 `docs/_meta/quality-report.md` 的『语义核对轮』与『规范 4.2 落地与首跑』两节
+——该报告是时点快照，**数字以报告为准，本章程不复制**。
+
+## 文档库与产物约束
+
+**一、目录与命名**（与 `convention.md`『目录与命名』节一致）
+
+| 目录 | 内容 | 生产者 | 命名规则 |
+|---|---|---|---|
+| `docs/_meta/` | 元信息与规范 | 主技能 / 盘点 / 校验 / 评估 | `convention.md`、`inventory.md`、`engine-modules.json`、`quality-report.md`、`skill-suite-assessment.md` |
+| `docs/modules/` | 模块级结构 | `ue-module-structure` | `<模块名>-结构.md` |
+| `docs/types/` | 类型级 API 面 | `ue-type-api` | `<类名>.md` |
+| `docs/flows/` | 机制级调用链 | `ue-flow-trace` | `<机制名>.md` |
+| `docs/ai/` | AI 检索索引 | `ue-ai-index` | `ai-index.md` |
+| `docs/` 根 | 全库索引与说明类文档 | 主技能 / 人工 | `00-索引.md`、`设计说明-*.md`、Spec Kit 使用指南 |
+
+**二、产物必备结构**：文档头（原则 III）、正文、`## 取数说明`（原则 V）、
+`## 相关文档`（可交叉引用的其他产物）；发生实质修正时追加 `## 更新记录`。
+本条按术语约定只适用于 `docs/modules|types|flows/` 下的产物。
+
+**三、索引一致性**：每完成一篇产物 MUST 在 `docs/00-索引.md` 追加一行；校验通过后回填校验状态。
+索引与磁盘 MUST 保持一致。**现状说明**：该项目前为**人工核对**——套件的三个脚本
+（`check-source.ps1` / `scan-engine.ps1` / `verify-refs.ps1`）都不检查索引，
+`verify-refs.ps1` 只扫 `docs/modules|types|flows/`。补齐脚本前，此项 MUST 在批次收口时人工核一遍。
+
+**四、AI 检索索引**：`docs/ai/ai-index.md` 只从既有产物重组提炼，MUST NOT 引入新事实；
+产物数量增长后 MUST 重跑。
+
+**五、范围边界（非目标，防止范围蔓延）**
+
+| 不做 | 原因 |
+|---|---|
+| 逐行翻译 / 注释引擎源码 | 无边际收益，且无法校验 |
+| `ThirdParty`（第三方库）文档 | 第三方库噪声，非 Epic 实现 |
+| `Editor` / `Developer` / `Programs` / `Platforms` 层 | 本版服务 Gameplay 开发，不服务工具链与编辑器扩展 |
+| 跨引擎版本并行维护 | 本版锁定 UE 5.8 单版本 |
+| 可编译的示例工程 | 只产出文档，不产出工程代码 |
+
+## 技能套件与工作流
+
+**一、独立成技能的三问判据**（三问全"是"才独立成技能，否则降级为步骤文档或数据文件）：
+
+1. 能否一句话说清「输入 X → 单一产物 Y → 给消费者 Z」？
+2. 能否被独立触发（用户可能只想做这一步）？
+3. 改动频率是否与其他部分显著不同？
+
+**二、拆分轴**：子技能按**产物粒度**拆（模块 / 类型 / 流程），主技能按**流程阶段**编排。
+MUST NOT 按引擎子系统或引擎模块垂直拆技能——模块清单是**数据**不是**能力**。
+原则：把"多"留给数据文件，把"专"留给技能。
+
+**三、单一职责**：每个技能只产出自己那一种产物，并在 `SKILL.md` 中写明「明确不做」
+与 description 触发锚点，避免子技能之间抢触发。
+
+**四、脚本归属**：脚本 MUST 跟着唯一消费者走，放进该技能的 `scripts/`；
+出现第二个消费者时才上提到共享位置。
+
+**五、新增或修改技能** MUST 走 `.codebuddy/skills/`，动手前先读设计文档中的拆分判据
+（`docs/设计说明-UE5引擎文档技能套件.md`『拆分方法论』节）。
+
+**六、标准闭环**（每个批次 MUST 依次经过；批次划分见 `docs/_meta/inventory.md`）：
+盘点 → 定批 → 生产 → 机器初筛 → 校验 → 回填校验状态 → 重建索引。
+
+**七、质量门禁**：`verify-refs.ps1` 判 PASS 才可把产物标为 `已校验`；
+`ue-doc-verify` 与 `ue-ai-index` MUST NOT 新增事实内容——前者只核对，后者只重组。
+
+**八、变更传播**：规范或技能变更 MUST 做反向检索，评估已有产物的影响面并同步。
+产物内容未变时，本轮记为"零修正"，不重复做语义重校。
+
+**九、检查点**：技能的关键步骤 MUST 给出可直接复制的检查点命令，
+供使用者与后续会话复现判断。
+
+## Spec Kit 工作流约束
+
+> 本节为 v1.1.0 新增。Spec Kit 于 2026-10-14 引入本仓库（`specify-cli` 1.2.0，
+> CodeBuddy 集成），用于**本仓库自身的开发流程**。其使用细节见 `docs/SpecKit-使用指南.md`。
+> **本节随 Spec Kit 演进**：该指南文件改名、或本节所述工具版本与行为变更时，
+> MUST 按 Governance 的修订程序同步本节（含派生的目录表与运行时指引条目）。
+
+**一、定位**：Spec Kit 管的是「**功能怎么推进**」（规范 → 计划 → 任务 → 实现），
+`convention.md` 管的是「**文档长什么样**」。两者职责不重叠，MUST NOT 互相援引作为格式依据。
+
+**二、落位**（三处，均在仓库内，MUST 保持）：
+
+| 位置 | 内容 | 是否入库 |
+|---|---|---|
+| `.specify/` | 脚手架、模板、脚本、章程、集成清单 | MUST 入库；`.specify/feature.json` 属运行态，MUST NOT 入库（已由 `.specify/.gitignore` 忽略） |
+| `.codebuddy/commands/speckit.*.md` | 斜杠命令定义 | MUST 入库 |
+| `specs/<NNN>-<slug>/` | 每个功能的 `spec.md` / `plan.md` / `tasks.md` / `checklists/` 等 | MUST 入库（"为什么这么改"的证据链） |
+
+Spec Kit CLI 本体是**机器级工具**（装在用户目录），MUST NOT 视为仓库资产，
+MUST NOT 被写入 `docs/` 的产物清单。
+
+**三、两条硬线**（本节对 Spec Kit 产物的全部约束即此两条）：
+
+1. `specs/` 下产物 MUST NOT 触碰引擎安装根——与原则 I 同一条红线。
+   尤其 `/speckit.implement` 会按 `tasks.md` 改文件，因此 `tasks.md` MUST NOT 包含
+   任何写入引擎安装根的任务。
+2. `specs/` 下产物引用引擎代码时，路径 MUST 相对引擎安装根、以 `Engine/` 开头、不含盘符
+   ——与原则 IV 同一条。
+
+**四、明确不要求**（写明"不做"，避免后续误以为遗漏）：
+
+- `specs/` 下产物 MUST NOT 被要求五字段文档头（原则 III 只覆盖 `docs/modules|types|flows/`）。
+- `specs/` 下产物 MUST NOT 被要求 `## 取数说明` 节（原则 V 只覆盖 `docs/modules|types|flows/`
+  下的产物——按术语约定，`specs/` 不属「产物」）。
+- `specs/` 下产物 MUST NOT 登记进 `docs/00-索引.md`——该索引只登记文档库产物。
+- 引擎校验流程（`ue-doc-verify`、`verify-refs.ps1`）MUST NOT 扫描 `specs/`。
+
+**五、治理边界**：Spec Kit 产物只受本节与 Spec Kit 自带模板约束，
+不参与「文档库」的效力优先级链（见 Governance）。若某条 Spec Kit 默认行为与本章程冲突，
+以本章程为准；冲突无法调和时 MUST 停用该命令并报告，MUST NOT 默认放行。
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+**效力与优先级**：本章程是最高约束。`convention.md` 是其下的实施细则。
+冲突时以本章程为准，且调整顺序 MUST 是先改技能、再改产物。
+优先级：**章程 > `convention.md` > 技能 `SKILL.md` > `docs/` 产物**。
+`specs/` 下 Spec Kit 产物只受「Spec Kit 工作流约束」节与 Spec Kit 自带模板约束，**不在此链内**。
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**修订程序**：任何修订 MUST ① 说明理由与影响面；② 同步检查 `convention.md`
+与受影响的技能；③ 按版本策略递增版本号；④ 涉及规范时在 `convention.md`
+「变更记录」追加条目；⑤ 更新本章程底部的版本行；⑥ **反向检查本章程自身的引用**
+——被点名的脚本 / 技能 / 目录若已改名、所引规范的章节若已重排、所引时点数据若已漂移，
+MUST 一并在本次修订中同步。
+
+**版本策略（语义化）**：
+
+- **MAJOR**：移除或重定义原则、不兼容的治理变更。
+- **MINOR**：新增原则或章节、实质性扩展既有指引。
+- **PATCH**：措辞澄清、错别字、非语义性修正。
+
+**合规复核**：每个批次收口 MUST 做一次全量复核——`verify-refs.ps1`（引用 / 文档头 /
+版本锚点 / 数字复算）**由机器跑**；**索引 ↔ 磁盘一致性为人工核对**
+（原因见「文档库与产物约束」『索引一致性』条的现状说明）。每次规范升版 MUST 做影响面回归。
+复核结果 MUST 按 `convention.md`『目录与命名』节的规定落盘留痕；本章程不指定具体文件。
+
+**运行时指引**：日常操作以 `docs/_meta/convention.md` 与主技能 `ue-engine-docs`
+的 `SKILL.md` 为准；Spec Kit 的日常操作以 `docs/SpecKit-使用指南.md` 为准。
+本套件为**只读引擎、只写 `docs/`** 的文档生产工具链。
+
+**Version**: 1.1.2 | **Ratified**: 2026-10-13 | **Last Amended**: 2026-10-15

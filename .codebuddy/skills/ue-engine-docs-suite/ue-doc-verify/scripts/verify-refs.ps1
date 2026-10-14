@@ -16,6 +16,9 @@
         - block form:   "\u6587\u4EF6\uFF1A<path>" followed by "\u884C A-B: ..."
         - inline form:  "<short-name> \u884C A-B" resolved via the artifact's
           short-name -> full-path table, or by unique basename match
+        - di form:      "\u7B2C N-M \u884C" (number precedes the char) bound ONLY
+          when a file token sits immediately before the number on the same line;
+          other occurrences are counted as unbound and never guessed
     [5] engine version anchor read from Engine/Build/Build.version
 
   Read-only. Pure ASCII on purpose: Windows PowerShell 5.1 decodes BOM-less
@@ -73,6 +76,10 @@ $INLINE_REF    = '([A-Za-z0-9_]+\.(?:h|cpp|cs|inl))`?\s*' + $P_LINE + '\s*(\d+)(
 $SHORTMAP_ROW  = '^\|\s*`([^`]+)`\s*\|\s*`(Engine/[^`]+)`\s*\|'
 $DRIVE_PAT     = '(?<![A-Za-z])[A-Za-z]:[\\/]'
 $BACKSLASH_PAT = 'Engine\\'
+$NAME_PAT      = '[A-Za-z0-9_]+\.(?:h|cpp|cs|inl)'
+$DI_LINE       = '\u7B2C\s*(\d+)(?:\s*[-\u2013~]\s*(\d+))?\s*' + $P_LINE
+# adjacency form: a file token immediately (spaces / one opening bracket allowed) before the number
+$DI_ADJ        = '(?<f>(?<![A-Za-z0-9_\\/])Engine/[A-Za-z0-9_\-./]+\.(?:h|cpp|cs|inl)|[A-Za-z0-9_]+\.(?:h|cpp|cs|inl))`?\s*[\uFF08(]?\s*\u7B2C\s*(?<s>\d+)(?:\s*[-\u2013~]\s*(?<e>\d+))?\s*' + $P_LINE
 
 # --- collect artifacts ---
 $artifactDirs = @('modules', 'types', 'flows')
@@ -100,8 +107,10 @@ $headerLines   = New-Object System.Collections.ArrayList   # pscustomobject Arti
 $pathViolations= New-Object System.Collections.ArrayList   # strings
 $rawBlocks     = New-Object System.Collections.ArrayList   # Artifact, File, Start, End, Line
 $rawInlines    = New-Object System.Collections.ArrayList   # Artifact, Name, Start, End, Line
+$rawDis        = New-Object System.Collections.ArrayList   # "di" form: Artifact, File, Name, Start, End, Line, Kind
 $shortMaps     = @{}                                       # artifact -> hashtable name->path
 $allRefs       = @{}                                       # full path -> $true
+$diUnboundRaw  = 0                                         # "di" occurrences with no adjacent file token (never guessed)
 
 foreach ($a in $artifacts) {
     $rel   = $a.FullName.Substring($docsRootResolved.Length + 1).Replace('\', '/')
@@ -165,6 +174,34 @@ foreach ($a in $artifacts) {
                 Start = $s; End = $e; Line = $lineNo
             })
         }
+
+        # [4] "di" form: "<file> 第 N(-M) 行" — bind ONLY when a file token sits
+        #   immediately before the number on the SAME line (spaces, a backtick and
+        #   one opening bracket allowed in between). Any other occurrence is counted
+        #   as unbound and NEVER guessed: a single line may cite several files, and
+        #   the nearest file name in a paragraph is not necessarily the referent.
+        $diTotal = ([regex]::Matches($line, $DI_LINE)).Count
+        $diHit   = 0
+        foreach ($m in [regex]::Matches($line, $DI_ADJ)) {
+            $tok = $m.Groups['f'].Value
+            $s   = [int]$m.Groups['s'].Value
+            $e   = $s
+            if ($m.Groups['e'].Success) { $e = [int]$m.Groups['e'].Value }
+            $entry = [pscustomobject]@{
+                Artifact = $rel; File = $null; Name = $null
+                Start = $s; End = $e; Line = $lineNo; Kind = 'di-name'
+            }
+            if ($tok -match '^(?i)Engine[\\/]') {
+                $entry.File = $tok -replace '\\', '/'
+                $entry.Kind = 'di-path'
+            }
+            else {
+                $entry.Name = ($tok -replace '\\', '/' -split '/')[-1]
+            }
+            [void]$rawDis.Add($entry)
+            $diHit++
+        }
+        if ($diTotal -gt $diHit) { $diUnboundRaw += ($diTotal - $diHit) }
     }
     $shortMaps[$rel] = $map
 }
@@ -201,6 +238,32 @@ foreach ($ip in $rawInlines) {
     }
     else {
         [void]$unresolved.Add(("{0}:{1}: {2} line {3}" -f $ip.Artifact, $ip.Line, $ip.Name, $ip.Start))
+    }
+}
+
+# resolve "di" refs whose binding came from a short name (same line, or single-name paragraph)
+$diBound   = 0
+$diUnbound = 0
+foreach ($dp in $rawDis) {
+    $target = $dp.File
+    if (-not $target -and $dp.Name) {
+        $map = $shortMaps[$dp.Artifact]
+        if ($map.ContainsKey($dp.Name)) {
+            $target = $map[$dp.Name]
+        }
+        elseif ($baseMap.ContainsKey($dp.Name) -and $baseMap[$dp.Name].Count -eq 1) {
+            $target = $baseMap[$dp.Name][0]
+        }
+    }
+    if ($target) {
+        $allRefs[$target] = $true
+        $diBound++
+        [void]$refPoints.Add([pscustomobject]@{
+            Artifact = $dp.Artifact; File = $target; Start = $dp.Start; End = $dp.End; Kind = $dp.Kind; Line = $dp.Line
+        })
+    }
+    else {
+        $diUnbound++
     }
 }
 
@@ -261,6 +324,7 @@ Write-Host ''
 Write-Host ("== [4] Line-range references ({0} resolved points) ==" -f $refPoints.Count)
 $kindStat = $refPoints | Group-Object Kind | ForEach-Object { "{0}:{1}" -f $_.Name, $_.Count }
 Write-Host ("  by kind: {0}" -f ($kindStat -join '  '))
+Write-Host ("  di form (number before the CJK line char): {0} checked / {1} unbound - no file token adjacent to the number" -f $diBound, ($diUnboundRaw + $diUnbound))
 if ($unresolved.Count -gt 0) {
     Write-Host ("  unresolved inline refs ({0}) - check manually:" -f $unresolved.Count)
     foreach ($v in $unresolved) { Write-Host ("    ? {0}" -f $v) }
